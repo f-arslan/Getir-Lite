@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- Change Stroke Color to tertiary for selected state -->
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/item_card"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:cardCornerRadius="16dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="?attr/colorPrimary"
+        app:strokeWidth="1dp">
+
+        <ImageView
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:contentDescription="@string/food_image"
+            android:src="@drawable/food" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_item_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="-8dp"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="1dp"
+        app:layout_constraintEnd_toEndOf="@id/item_card"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/ll_item_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btn_add"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="?attr/colorSurface"
+                android:contentDescription="@string/add_item"
+                android:padding="4dp"
+                android:src="@drawable/ic_plus" />
+
+            <!-- Only change these items visibility to get only plus sign -->
+            <TextView
+                android:id="@+id/tv_item_count"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="?attr/colorPrimary"
+                android:gravity="center"
+                android:textColor="?attr/colorSurface"
+                android:textSize="12sp"
+                tools:text="4" />
+
+            <ImageButton
+                android:id="@+id/btn_delete"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="?attr/colorSurface"
+                android:contentDescription="@string/add_item"
+                android:padding="4dp"
+                android:src="@drawable/ic_trash" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
