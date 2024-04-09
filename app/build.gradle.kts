@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.kotlinx.serilization)
 }
 
 android {
@@ -20,6 +21,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // TODO: Prepare for release
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -32,6 +34,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -44,6 +47,7 @@ android {
 }
 
 dependencies {
+    // Androidx - UI
     implementation(libs.material)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -72,4 +76,11 @@ dependencies {
 
     // Datastore
     implementation(libs.datastore.preferences)
+
+    // Retrofit & OkHttp
+    implementation(libs.retrofit)
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.logging.interceptor)
 }
