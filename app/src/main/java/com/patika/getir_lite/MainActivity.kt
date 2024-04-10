@@ -10,7 +10,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import com.patika.getir_lite.feature.listing.ListingFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 

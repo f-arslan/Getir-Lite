@@ -2,19 +2,23 @@ package com.patika.getir_lite.data.remote.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.patika.getir_lite.BuildConfig
-import com.patika.getir_lite.data.remote.ProductApi
-import com.patika.getir_lite.data.remote.SuggestedProductApi
+import com.patika.getir_lite.data.di.AppDispatchers
+import com.patika.getir_lite.data.di.Dispatcher
+import com.patika.getir_lite.data.remote.ProductDataSource
+import com.patika.getir_lite.data.remote.ProductRepository
+import com.patika.getir_lite.data.remote.api.ProductApi
+import com.patika.getir_lite.data.remote.api.SuggestedProductApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -40,18 +44,18 @@ object ApiModule {
             .addInterceptor(httpLoggingInterceptor)
             .build()
 
-    @Named(PRODUCT_API)
+    private val json = Json { ignoreUnknownKeys = true }
+
     @Singleton
     @Provides
     fun provideProductApi(okHttpClient: OkHttpClient): ProductApi =
         Retrofit.Builder()
             .client(okHttpClient)
-            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .baseUrl(PRODUCT_URL)
             .build()
             .create(ProductApi::class.java)
 
-    @Named(SUGGESTED_PRODUCT_API)
     @Singleton
     @Provides
     fun provideSuggestedProductApi(okHttpClient: OkHttpClient): SuggestedProductApi =
@@ -62,11 +66,16 @@ object ApiModule {
             .build()
             .create(SuggestedProductApi::class.java)
 
+    @Singleton
+    @Provides
+    fun provideProductRepository(
+        productApi: ProductApi,
+        suggestedProductApi: SuggestedProductApi,
+        @Dispatcher(AppDispatchers.IO) dispatcher: CoroutineDispatcher
+    ): ProductRepository = ProductDataSource(productApi, suggestedProductApi, dispatcher)
+
     private const val SUGGESTED_PRODUCT_URL =
         "https://65c38b5339055e7482c12050.mockapi.io/api/"
     private const val PRODUCT_URL =
         "https://65c38b5339055e7482c12050.mockapi.io/api/"
-
-    private const val SUGGESTED_PRODUCT_API = "SUGGESTED_PRODUCT_API"
-    private const val PRODUCT_API = "PRODUCT_API"
 }
