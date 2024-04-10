@@ -1,4 +1,4 @@
-package com.patika.getir_lite.data.model
+package com.patika.getir_lite.data.remote.model
 
 import kotlinx.serialization.Serializable
 
