@@ -1,5 +1,6 @@
 package com.patika.getir_lite.data.remote.model
 
+import com.patika.getir_lite.model.SuggestedProduct
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -15,3 +16,9 @@ data class SuggestedProductDto(
     val squareThumbnailURL: String? = null,
     val status: Int? = null
 )
+
+fun SuggestedProductDto.toDomainModel(): SuggestedProduct {
+    val imageURL = imageURL ?: squareThumbnailURL
+    val attribute = shortDescription ?: "No description available."
+    return SuggestedProduct(id, imageURL, price.toBigDecimal(), name.trim(), attribute.trim())
+}
