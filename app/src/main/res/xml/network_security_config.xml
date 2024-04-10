@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+
+    <!-- One of the image URLs starts with HTTP instead of HTTPS;
+         we need to give the domain permission -->
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">cdn.getir.com</domain>
+    </domain-config>
+</network-security-config>
