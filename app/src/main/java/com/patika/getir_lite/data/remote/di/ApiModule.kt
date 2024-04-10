@@ -4,8 +4,8 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.patika.getir_lite.BuildConfig
 import com.patika.getir_lite.data.di.AppDispatchers
 import com.patika.getir_lite.data.di.Dispatcher
-import com.patika.getir_lite.data.remote.ProductDataSource
-import com.patika.getir_lite.data.remote.ProductRepository
+import com.patika.getir_lite.data.remote.RemoteDataSource
+import com.patika.getir_lite.data.remote.RemoteRepository
 import com.patika.getir_lite.data.remote.api.ProductApi
 import com.patika.getir_lite.data.remote.api.SuggestedProductApi
 import dagger.Module
@@ -72,7 +72,7 @@ object ApiModule {
         productApi: ProductApi,
         suggestedProductApi: SuggestedProductApi,
         @Dispatcher(AppDispatchers.IO) dispatcher: CoroutineDispatcher
-    ): ProductRepository = ProductDataSource(productApi, suggestedProductApi, dispatcher)
+    ): RemoteRepository = RemoteDataSource(productApi, suggestedProductApi, dispatcher)
 
     private const val SUGGESTED_PRODUCT_URL =
         "https://65c38b5339055e7482c12050.mockapi.io/api/"
