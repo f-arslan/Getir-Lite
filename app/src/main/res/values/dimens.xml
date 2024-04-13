@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="margin_start_end">8dp</dimen>
+    <dimen name="margin_bottom">16dp</dimen>
     <dimen name="suggested_product_image_size">96dp</dimen>
     <dimen name="suggested_product_card_width">104dp</dimen>
 </resources>

@@ -43,15 +43,4 @@
         app:layout_constraintTop_toBottomOf="@id/tv_item_price"
         tools:text="Product Name" />
 
-    <TextView
-        android:id="@+id/tv_item_attribute"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:background="@color/shimmerColor"
-        android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_item_name"
-        tools:text="Attribute" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>
