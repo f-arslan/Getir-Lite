@@ -7,6 +7,7 @@ data class Product(
     val name: String,
     val price: BigDecimal,
     val attribute: String? = null,
-    val imageUrl: String,
-    val count: Int = 0
+    val imageURL: String? = null,
+    val count: Int = 0,
+    val productType: ProductType = ProductType.PRODUCT
 )

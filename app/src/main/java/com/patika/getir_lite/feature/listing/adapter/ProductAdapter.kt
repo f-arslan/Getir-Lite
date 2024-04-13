@@ -10,11 +10,11 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import com.patika.getir_lite.R
 import com.patika.getir_lite.databinding.ItemListingBinding
-import com.patika.getir_lite.model.SuggestedProduct
+import com.patika.getir_lite.model.Product
 import java.math.BigDecimal
 import java.util.Locale
 
-class SuggestedProductAdapter : ListAdapter<SuggestedProduct, RecyclerView.ViewHolder>(ItemDiff) {
+class ProductAdapter : ListAdapter<Product, RecyclerView.ViewHolder>(ItemDiff) {
 
     private val asyncListDiffer = AsyncListDiffer(this, ItemDiff)
 
@@ -33,19 +33,18 @@ class SuggestedProductAdapter : ListAdapter<SuggestedProduct, RecyclerView.ViewH
 
     inner class SuggestedProductViewHolder(private val binding: ItemListingBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(suggestedProduct: SuggestedProduct) {
+        fun bind(product: Product) {
             with(binding) {
-                tvItemName.text = suggestedProduct.name
-                tvItemCount.text = suggestedProduct.count.toString()
-                tvItemAttribute.text = suggestedProduct.attribute
-                tvItemPrice.text = formatPrice(suggestedProduct.price)
+                tvItemName.text = product.name
+                tvItemCount.text = product.count.toString()
+                tvItemAttribute.text = product.attribute
+                tvItemPrice.text = formatPrice(product.price)
                 val imageLoader = ivItem.context.imageLoader
                 val request = ImageRequest.Builder(ivItem.context)
-                    .data(suggestedProduct.imageURL)
+                    .data(product.imageURL)
                     .target(ivItem)
                     .build()
                 imageLoader.enqueue(request)
-                println("${suggestedProduct.name} ${suggestedProduct.imageURL}")
             }
         }
 
@@ -56,20 +55,20 @@ class SuggestedProductAdapter : ListAdapter<SuggestedProduct, RecyclerView.ViewH
         )
     }
 
-    fun saveData(suggestedProducts: List<SuggestedProduct>) {
-        asyncListDiffer.submitList(suggestedProducts)
+    fun saveData(product: List<Product>) {
+        asyncListDiffer.submitList(product)
     }
 
     companion object {
-        val ItemDiff = object : DiffUtil.ItemCallback<SuggestedProduct>() {
+        val ItemDiff = object : DiffUtil.ItemCallback<Product>() {
             override fun areItemsTheSame(
-                oldItem: SuggestedProduct,
-                newItem: SuggestedProduct
+                oldItem: Product,
+                newItem: Product
             ): Boolean = oldItem.id == newItem.id
 
             override fun areContentsTheSame(
-                oldItem: SuggestedProduct,
-                newItem: SuggestedProduct
+                oldItem: Product,
+                newItem: Product
             ): Boolean = oldItem == newItem
         }
     }

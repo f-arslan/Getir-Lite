@@ -22,6 +22,6 @@ fun ProductDto.toDomainModel(): Product {
         name = name.trim(),
         price = price.toBigDecimal(),
         attribute = attribute?.trim(),
-        imageUrl = imageURL
+        imageURL = imageURL
     )
 }

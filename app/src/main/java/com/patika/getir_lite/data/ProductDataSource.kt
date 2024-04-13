@@ -5,7 +5,6 @@ import com.patika.getir_lite.data.remote.model.SuggestedProductDto
 import com.patika.getir_lite.data.remote.model.toDomainModel
 import com.patika.getir_lite.data.remote.model.DataResult
 import com.patika.getir_lite.model.Product
-import com.patika.getir_lite.model.SuggestedProduct
 import javax.inject.Inject
 
 class ProductDataSource @Inject constructor(
@@ -25,7 +24,7 @@ class ProductDataSource @Inject constructor(
         }
     }
 
-    override suspend fun getSuggestedProducts(): DataResult<List<SuggestedProduct>> {
+    override suspend fun getSuggestedProducts(): DataResult<List<Product>> {
         return when (val dataResult = remoteRepository.getSuggestedProductDtos()) {
             is DataResult.Success -> {
                 val suggestedProducts = dataResult.data.map(SuggestedProductDto::toDomainModel)

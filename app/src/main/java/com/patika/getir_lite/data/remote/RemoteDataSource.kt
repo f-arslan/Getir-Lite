@@ -22,7 +22,7 @@ class RemoteDataSource @Inject constructor(
     override suspend fun getProductDtos(): DataResult<List<ProductDto>> =
         remoteResultWrapper(productApi::getProducts) { responseBody ->
             if (responseBody.isNotEmpty()) {
-                DataResult.Success(responseBody.first().productDtos)
+                DataResult.Success(responseBody.first().productDtos ?: emptyList())
             } else {
                 DataResult.Error(ProductEmptyException())
             }

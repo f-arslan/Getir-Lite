@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ProductContainerDto(
     val id: String,
-    val name: String,
-    val productCount: Int,
+    val name: String? = null,
+    val productCount: Int? = null,
     @SerialName("products")
-    val productDtos: List<ProductDto>
+    val productDtos: List<ProductDto>? = null
 )
