@@ -10,6 +10,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
+import com.patika.getir_lite.feature.detail.DetailFragment
 import com.patika.getir_lite.feature.listing.ListingFragment
 import dagger.hilt.android.AndroidEntryPoint
 

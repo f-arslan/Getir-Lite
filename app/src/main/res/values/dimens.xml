@@ -4,4 +4,7 @@
     <dimen name="margin_bottom">16dp</dimen>
     <dimen name="suggested_product_image_size">96dp</dimen>
     <dimen name="suggested_product_card_width">104dp</dimen>
+    <dimen name="product_image_size">104dp</dimen>
+    <dimen name="product_card_width">112dp</dimen>
+    <dimen name="basket_card_size">72dp</dimen>
 </resources>

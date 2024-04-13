@@ -7,7 +7,7 @@
     <color name="seed">#6750A4</color>
     <color name="md_theme_light_primary">#5d3ebc</color>
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
-    <color name="md_theme_light_primaryContainer">#EADDFF</color>
+    <color name="md_theme_light_primaryContainer">#000000</color>
     <color name="md_theme_light_onPrimaryContainer">#21005D</color>
     <color name="md_theme_light_secondary">#625B71</color>
     <color name="md_theme_light_onSecondary">#FFFFFF</color>
@@ -21,7 +21,7 @@
     <color name="md_theme_light_onError">#FFFFFF</color>
     <color name="md_theme_light_errorContainer">#F9DEDC</color>
     <color name="md_theme_light_onErrorContainer">#410E0B</color>
-    <color name="md_theme_light_outline">#79747E</color>
+    <color name="md_theme_light_outline">#f4f0fe</color>
     <color name="md_theme_light_background">#f5f5f5</color>
     <color name="md_theme_light_onBackground">#191919</color>
     <color name="md_theme_light_surface">#FFFFFF</color>
@@ -31,7 +31,7 @@
     <color name="md_theme_light_inverseSurface">#313033</color>
     <color name="md_theme_light_inverseOnSurface">#F4EFF4</color>
     <color name="md_theme_light_inversePrimary">#697488</color>
-    <color name="md_theme_light_shadow">#000000</color>
+    <color name="md_theme_light_shadow">#FF0000</color>
     <color name="md_theme_light_surfaceTint">#6750A4</color>
     <color name="md_theme_light_outlineVariant">#CAC4D0</color>
     <color name="md_theme_light_scrim">#000000</color>

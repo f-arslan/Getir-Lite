@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.patika.getir_lite.R
+import com.patika.getir_lite.databinding.ActionButtonsBinding
 import com.patika.getir_lite.databinding.ItemListingBinding
 import com.patika.getir_lite.model.Product
 import java.math.BigDecimal
@@ -36,7 +37,7 @@ class ProductAdapter : ListAdapter<Product, RecyclerView.ViewHolder>(ItemDiff) {
         fun bind(product: Product) {
             with(binding) {
                 tvItemName.text = product.name
-                tvItemCount.text = product.count.toString()
+                layoutLlActionButtons.tvItemCount.text = product.count.toString()
                 tvItemAttribute.text = product.attribute
                 tvItemPrice.text = formatPrice(product.price)
                 val imageLoader = ivItem.context.imageLoader
