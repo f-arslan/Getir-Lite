@@ -1,0 +1,56 @@
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cv_item_action"
+    style="@style/ListingCardViewStyle">
+
+    <LinearLayout
+        android:id="@+id/ll_item_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/btn_add"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/colorSurface"
+            android:contentDescription="@string/add_item"
+            android:padding="4dp"
+            android:src="@drawable/ic_plus" />
+
+        <TextView
+            android:id="@+id/tv_item_count"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/colorPrimary"
+            android:gravity="center"
+            android:textColor="?attr/colorSurface"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="4" />
+
+        <!-- Set visibility to gone for the delete button -->
+
+        <ImageButton
+            android:id="@+id/btn_delete"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/colorSurface"
+            android:contentDescription="@string/add_item"
+            android:padding="4dp"
+            android:src="@drawable/ic_trash" />
+
+        <ImageButton
+            android:id="@+id/btn_minus"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/colorSurface"
+            android:contentDescription="@string/add_item"
+            android:padding="4dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_minus"/>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
