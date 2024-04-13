@@ -25,6 +25,7 @@ retrofit2-kotlinx-serilization = "1.0.0"
 okhttp = "4.12.0"
 logging-interceptor = "4.12.0"
 coil = "2.6.0"
+shimmer = "0.5.0"
 
 [libraries]
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
@@ -60,6 +61,7 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "logging-interceptor" }
 
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

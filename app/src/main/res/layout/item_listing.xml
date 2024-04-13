@@ -14,18 +14,18 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:cardCornerRadius="16dp"
-        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:strokeColor="?attr/colorTertiary"
         app:strokeWidth="1dp">
 
-        <ImageView
+        <com.patika.getir_lite.ui.ProductImageView
             android:id="@+id/iv_item"
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:contentDescription="@string/food_image"
-            android:src="@drawable/food" />
+            android:layout_width="@dimen/suggested_product_image_size"
+            android:layout_height="@dimen/suggested_product_image_size"
+            android:background="@drawable/food"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/food_image" />
 
     </com.google.android.material.card.MaterialCardView>
 
@@ -103,7 +103,7 @@
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_item_price"
-        tools:text="Product Nameasdsadasasdasd" />
+        tools:text="Product Name" />
 
     <TextView
         android:id="@+id/tv_item_attribute"
@@ -117,7 +117,6 @@
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_item_name"
-        tools:text="Attributedsadasdas" />
-
+        tools:text="Attribute" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
