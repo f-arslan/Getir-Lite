@@ -7,7 +7,6 @@ import com.patika.getir_lite.data.di.Dispatcher
 import com.patika.getir_lite.data.remote.RemoteDataSource
 import com.patika.getir_lite.data.remote.RemoteRepository
 import com.patika.getir_lite.data.remote.api.ProductApi
-import com.patika.getir_lite.data.remote.api.SuggestedProductApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -52,30 +51,16 @@ object ApiModule {
         Retrofit.Builder()
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-            .baseUrl(PRODUCT_URL)
+            .baseUrl(BASE_URL)
             .build()
             .create(ProductApi::class.java)
 
     @Singleton
     @Provides
-    fun provideSuggestedProductApi(okHttpClient: OkHttpClient): SuggestedProductApi =
-        Retrofit.Builder()
-            .client(okHttpClient)
-            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
-            .baseUrl(SUGGESTED_PRODUCT_URL)
-            .build()
-            .create(SuggestedProductApi::class.java)
-
-    @Singleton
-    @Provides
     fun provideProductRepository(
         productApi: ProductApi,
-        suggestedProductApi: SuggestedProductApi,
         @Dispatcher(AppDispatchers.IO) dispatcher: CoroutineDispatcher
-    ): RemoteRepository = RemoteDataSource(productApi, suggestedProductApi, dispatcher)
-
-    private const val SUGGESTED_PRODUCT_URL =
-        "https://65c38b5339055e7482c12050.mockapi.io/api/"
-    private const val PRODUCT_URL =
+    ): RemoteRepository = RemoteDataSource(productApi, dispatcher)
+    private const val BASE_URL =
         "https://65c38b5339055e7482c12050.mockapi.io/api/"
 }

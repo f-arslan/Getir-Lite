@@ -3,7 +3,6 @@ package com.patika.getir_lite.data.remote
 import com.patika.getir_lite.data.di.AppDispatchers.IO
 import com.patika.getir_lite.data.di.Dispatcher
 import com.patika.getir_lite.data.remote.api.ProductApi
-import com.patika.getir_lite.data.remote.api.SuggestedProductApi
 import com.patika.getir_lite.data.remote.model.ProductDto
 import com.patika.getir_lite.data.remote.model.SuggestedProductDto
 import com.patika.getir_lite.data.remote.util.ApiException.BodyNullException
@@ -18,7 +17,6 @@ import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
     private val productApi: ProductApi,
-    private val suggestedProductApi: SuggestedProductApi,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher
 ) : RemoteRepository {
     override suspend fun getProductDtos(): DataResult<List<ProductDto>> =
@@ -31,7 +29,7 @@ class RemoteDataSource @Inject constructor(
         }
 
     override suspend fun getSuggestedProductDtos(): DataResult<List<SuggestedProductDto>> =
-        remoteResultWrapper(suggestedProductApi::getSuggestedProducts) { responseBody ->
+        remoteResultWrapper(productApi::getSuggestedProducts) { responseBody ->
             if (responseBody.isNotEmpty()) {
                 DataResult.Success(responseBody.first().suggestedProductDtos)
             } else {
