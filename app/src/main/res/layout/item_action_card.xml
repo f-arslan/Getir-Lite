@@ -2,8 +2,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cv_item_action"
-    app:cardElevation="2dp"
     style="@style/ListingCardViewStyle"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardElevation="2dp"
     app:strokeWidth="0dp">
 
     <LinearLayout

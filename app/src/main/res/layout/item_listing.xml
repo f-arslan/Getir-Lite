@@ -22,9 +22,9 @@
             android:id="@+id/iv_item"
             android:layout_width="@dimen/suggested_product_image_size"
             android:layout_height="@dimen/suggested_product_image_size"
-            android:background="@drawable/food"
             android:contentDescription="@string/food_image"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            tools:background="@drawable/food" />
 
     </com.google.android.material.card.MaterialCardView>
 
