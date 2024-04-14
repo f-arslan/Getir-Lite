@@ -1,37 +1,113 @@
 package com.patika.getir_lite.data
 
+import com.patika.getir_lite.data.di.AppDispatchers.IO
+import com.patika.getir_lite.data.di.Dispatcher
+import com.patika.getir_lite.data.local.ProductDao
+import com.patika.getir_lite.data.local.model.OrderEntity
+import com.patika.getir_lite.data.local.model.OrderStatus
+import com.patika.getir_lite.data.local.model.toDomainModel
 import com.patika.getir_lite.data.remote.RemoteRepository
-import com.patika.getir_lite.data.remote.model.SuggestedProductDto
+import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.data.remote.model.toDomainModel
-import com.patika.getir_lite.data.remote.model.DataResult
 import com.patika.getir_lite.model.Product
+import com.patika.getir_lite.model.ProductType
+import com.patika.getir_lite.model.toItemEntity
+import com.patika.getir_lite.util.TopLevelException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ProductDataSource @Inject constructor(
-    private val remoteRepository: RemoteRepository
+    private val remoteRepository: RemoteRepository,
+    private val productDao: ProductDao,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher
 ) : ProductRepository {
-    override suspend fun getProducts(): DataResult<List<Product>> {
-        return when (val dataResult = remoteRepository.getProductDtos()) {
-            is DataResult.Success -> {
-                val products = dataResult.data.mapNotNull { dto ->
+
+    private val _dataSyncResult = MutableStateFlow(listOf(DataSyncResult.IDLE))
+    override val dataSyncResult = _dataSyncResult.asStateFlow()
+
+    override fun getProductsAsFlow(): Flow<List<Product>> =
+        productDao.getAllItemsByType(ProductType.PRODUCT)
+            .map { productEntities -> productEntities.map { it.toDomainModel() } }
+
+
+    override fun getSuggestedProductsAsFlow(): Flow<List<Product>> =
+        productDao.getAllItemsByType(ProductType.SUGGESTED_PRODUCT)
+            .map { productEntities -> productEntities.map { it.toDomainModel() } }
+
+    override suspend fun syncWithRemote(): BaseResponse<Unit> {
+        return try {
+            withContext(ioDispatcher) {
+                val remoteProductsDeferred = async { getProducts() }
+                val remoteSuggestedProductsDeferred = async { getSuggestedProducts() }
+                val localProductsDeferred = async { productDao.getAllItems() }
+
+                val remoteProducts = remoteProductsDeferred.await()
+                val remoteSuggestedProducts = remoteSuggestedProductsDeferred.await()
+                val localProduct = localProductsDeferred.await()
+
+                if (localProduct.isEmpty()) {
+                    if (remoteProducts is BaseResponse.Success) {
+                        saveDataToLocalFirstTime(remoteProducts.data)
+                        _dataSyncResult.update { it + DataSyncResult.PRODUCT_SYNCED }
+                    }
+
+                    if (remoteSuggestedProducts is BaseResponse.Success) {
+                        saveDataToLocalFirstTime(remoteSuggestedProducts.data)
+                        _dataSyncResult.update { it + DataSyncResult.SUGGESTED_PRODUCT_SYNCED }
+                    }
+                }
+
+                BaseResponse.Success(Unit)
+            }
+        } catch (e: Exception) {
+            BaseResponse.Error(TopLevelException.GenericException(e.message))
+        }
+    }
+
+    private suspend fun getProducts(): BaseResponse<List<Product>> =
+        when (val response = remoteRepository.getProductDtos()) {
+            is BaseResponse.Success -> {
+                val products = response.data.mapNotNull { dto ->
                     dto.toDomainModel().takeIf { it.attribute != null }
                 }
 
-                DataResult.Success(products)
+                BaseResponse.Success(products)
             }
 
-            is DataResult.Error -> dataResult
+            is BaseResponse.Error -> response
+            BaseResponse.Loading -> BaseResponse.Loading
         }
-    }
 
-    override suspend fun getSuggestedProducts(): DataResult<List<Product>> {
-        return when (val dataResult = remoteRepository.getSuggestedProductDtos()) {
-            is DataResult.Success -> {
-                val suggestedProducts = dataResult.data.map(SuggestedProductDto::toDomainModel)
-                DataResult.Success(suggestedProducts)
+    private suspend fun getSuggestedProducts(): BaseResponse<List<Product>> =
+        when (val response = remoteRepository.getSuggestedProductDtos()) {
+            is BaseResponse.Success -> {
+                val products = response.data.mapNotNull { dto ->
+                    dto.toDomainModel().takeIf { it.attribute != null }
+                }
+
+                BaseResponse.Success(products)
             }
 
-            is DataResult.Error -> dataResult
+            is BaseResponse.Error -> response
+            BaseResponse.Loading -> BaseResponse.Loading
         }
+
+    private suspend fun saveDataToLocalFirstTime(products: List<Product>) {
+        productDao.insertItems(products.map(Product::toItemEntity))
     }
+
+    override suspend fun updateItemCount(productId: Long, count: Int) {
+        productDao.updateItem(productId, count)
+    }
+}
+
+enum class DataSyncResult {
+    PRODUCT_SYNCED, SUGGESTED_PRODUCT_SYNCED, IDLE
 }
