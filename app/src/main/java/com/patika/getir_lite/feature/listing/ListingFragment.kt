@@ -11,8 +11,8 @@ import com.patika.getir_lite.databinding.FragmentListingBinding
 import com.patika.getir_lite.feature.BaseFragment
 import com.patika.getir_lite.feature.listing.adapter.ProductAdapter
 import com.patika.getir_lite.model.Response
-import com.patika.getir_lite.util.GridSpacingItemDecoration
-import com.patika.getir_lite.util.MarginItemDecoration
+import com.patika.getir_lite.util.decor.GridSpacingItemDecoration
+import com.patika.getir_lite.util.decor.MarginItemDecoration
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay

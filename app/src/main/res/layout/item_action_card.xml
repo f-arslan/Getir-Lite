@@ -1,7 +1,10 @@
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cv_item_action"
-    style="@style/ListingCardViewStyle">
+    app:cardElevation="2dp"
+    style="@style/ListingCardViewStyle"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:id="@+id/ll_item_action"
@@ -30,8 +33,6 @@
             android:textStyle="bold"
             tools:text="4" />
 
-        <!-- Set visibility to gone for the delete button -->
-
         <ImageButton
             android:id="@+id/btn_delete"
             android:layout_width="32dp"
@@ -48,9 +49,9 @@
             android:background="?attr/colorSurface"
             android:contentDescription="@string/add_item"
             android:padding="4dp"
-            android:visibility="gone"
-            android:src="@drawable/ic_minus"/>
+            android:src="@drawable/ic_minus"
+            android:visibility="gone" />
 
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

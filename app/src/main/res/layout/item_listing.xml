@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="@dimen/suggested_product_card_width"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="16dp">
+    android:layout_marginEnd="8dp">
 
     <!-- Change Stroke Color to tertiary for selected state -->
     <com.google.android.material.card.MaterialCardView
@@ -76,5 +76,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_item_name"
         tools:text="Attribute" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

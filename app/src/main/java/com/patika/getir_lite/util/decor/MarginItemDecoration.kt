@@ -1,4 +1,4 @@
-package com.patika.getir_lite.util
+package com.patika.getir_lite.util.decor
 
 import android.graphics.Rect
 import android.view.View
