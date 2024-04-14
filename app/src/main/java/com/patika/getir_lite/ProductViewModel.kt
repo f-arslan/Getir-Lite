@@ -1,15 +1,18 @@
 package com.patika.getir_lite
 
+import androidx.annotation.MainThread
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.patika.getir_lite.data.ProductRepository
-import com.patika.getir_lite.feature.listing.ListingRemoteUiState
-import com.patika.getir_lite.model.Response
+import com.patika.getir_lite.model.BaseResponse
+import com.patika.getir_lite.model.Product
+import com.patika.getir_lite.util.TopLevelException
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,27 +20,32 @@ import javax.inject.Inject
 class ProductViewModel @Inject constructor(private val productRepository: ProductRepository) :
     ViewModel() {
 
-    private val _remoteUiState = MutableStateFlow(ListingRemoteUiState())
-    val remoteUiState = _remoteUiState.asStateFlow()
+    val products: Flow<BaseResponse<List<Product>>> = productRepository
+        .getProductsAsFlow()
+        .map<List<Product>, BaseResponse<List<Product>>> { BaseResponse.Success(it) }
+        .catch { error ->
+            emit(BaseResponse.Error(TopLevelException.GenericException(error.message)))
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = BaseResponse.Loading
+        )
 
+    val suggestedProducts: Flow<BaseResponse<List<Product>>> = productRepository
+        .getSuggestedProductsAsFlow()
+        .map<List<Product>, BaseResponse<List<Product>>> { BaseResponse.Success(it) }
+        .catch { error ->
+            emit(BaseResponse.Error(TopLevelException.GenericException(error.message)))
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = BaseResponse.Loading
+        )
+
+    @MainThread
     fun initializeProductData() = viewModelScope.launch {
-        _remoteUiState.update {
-            it.copy(product = Response.Loading, suggestedProduct = Response.Loading)
-        }
-
-        val productDeferred = async {
-            productRepository.getProducts()
-        }
-
-        val suggestedProductDeferred = async {
-            productRepository.getSuggestedProducts()
-        }
-
-        val productResponse = productDeferred.await().toResponse()
-        val suggestedProductResponse = suggestedProductDeferred.await().toResponse()
-
-        _remoteUiState.update {
-            it.copy(product = productResponse, suggestedProduct = suggestedProductResponse)
-        }
+        productRepository.syncWithRemote()
     }
 }
