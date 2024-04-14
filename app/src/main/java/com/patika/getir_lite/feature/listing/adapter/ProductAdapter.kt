@@ -6,28 +6,46 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import coil.imageLoader
-import coil.request.ImageRequest
+import coil.load
 import com.patika.getir_lite.R
-import com.patika.getir_lite.databinding.ActionButtonsBinding
+import com.patika.getir_lite.databinding.ItemActionCardBinding
 import com.patika.getir_lite.databinding.ItemListingBinding
+import com.patika.getir_lite.model.ItemActionType
+import com.patika.getir_lite.model.ItemActionType.ONLY_PLUS
+import com.patika.getir_lite.model.ItemActionType.PLUS_DELETE
+import com.patika.getir_lite.model.ItemActionType.PLUS_MINUS
 import com.patika.getir_lite.model.Product
+import com.patika.getir_lite.model.ProductEvent
+import com.patika.getir_lite.util.ext.setVisibility
+import com.patika.getir_lite.util.ext.toItemActionType
 import java.math.BigDecimal
 import java.util.Locale
 
-class ProductAdapter : ListAdapter<Product, RecyclerView.ViewHolder>(ItemDiff) {
+class ProductAdapter(private val events: (ProductEvent) -> Unit) :
+    ListAdapter<Product, ProductAdapter.SuggestedProductViewHolder>(ItemDiff) {
 
     private val asyncListDiffer = AsyncListDiffer(this, ItemDiff)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SuggestedProductViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = ItemListingBinding.inflate(inflater, parent, false)
         return SuggestedProductViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: SuggestedProductViewHolder, position: Int) {
         val suggestedProduct = asyncListDiffer.currentList[position]
-        (holder as SuggestedProductViewHolder).bind(suggestedProduct)
+        holder.bind(suggestedProduct)
+    }
+
+    override fun onBindViewHolder(
+        holder: SuggestedProductViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        when (val latestPayloads = payloads.lastOrNull()) {
+            is ProductChangePayload.Count -> holder.bindCount(latestPayloads.newCount)
+            else -> onBindViewHolder(holder, position)
+        }
     }
 
     override fun getItemCount(): Int = asyncListDiffer.currentList.size
@@ -37,16 +55,41 @@ class ProductAdapter : ListAdapter<Product, RecyclerView.ViewHolder>(ItemDiff) {
         fun bind(product: Product) {
             with(binding) {
                 tvItemName.text = product.name
-                layoutLlActionButtons.tvItemCount.text = product.count.toString()
+
+                bindCount(product.count)
                 tvItemAttribute.text = product.attribute
                 tvItemPrice.text = formatPrice(product.price)
-                val imageLoader = ivItem.context.imageLoader
-                val request = ImageRequest.Builder(ivItem.context)
-                    .data(product.imageURL)
-                    .target(ivItem)
-                    .build()
-                imageLoader.enqueue(request)
+                ivItem.load(product.imageURL) {
+                    crossfade(true)
+                }
+
+                layoutActionButtons.handleActionOperations(product.entityId)
             }
+        }
+
+        private fun ItemActionCardBinding.handleActionOperations(entityId: Long) {
+            btnAdd.setOnClickListener {
+                events(ProductEvent.OnPlusClick(entityId))
+            }
+            btnMinus.setOnClickListener {
+                events(ProductEvent.OnMinusClick(entityId))
+            }
+            btnDelete.setOnClickListener {
+                events(ProductEvent.OnDeleteClick(entityId))
+            }
+        }
+
+        internal fun bindCount(count: Int) {
+            binding.layoutActionButtons.tvItemCount.text = count.toString()
+            val itemActionType = count.toItemActionType()
+            binding.layoutActionButtons.setButtonVisibility(itemActionType)
+        }
+
+        private fun ItemActionCardBinding.setButtonVisibility(itemActionType: ItemActionType) {
+            btnDelete.setVisibility(itemActionType == PLUS_DELETE)
+            tvItemCount.setVisibility(itemActionType != ONLY_PLUS)
+            btnMinus.setVisibility(itemActionType == PLUS_MINUS)
+            btnAdd.setVisibility(true)
         }
 
         private fun formatPrice(price: BigDecimal): String = String.format(
@@ -55,6 +98,7 @@ class ProductAdapter : ListAdapter<Product, RecyclerView.ViewHolder>(ItemDiff) {
             price
         )
     }
+
 
     fun saveData(product: List<Product>) {
         asyncListDiffer.submitList(product)
@@ -71,6 +115,20 @@ class ProductAdapter : ListAdapter<Product, RecyclerView.ViewHolder>(ItemDiff) {
                 oldItem: Product,
                 newItem: Product
             ): Boolean = oldItem == newItem
+
+            override fun getChangePayload(oldItem: Product, newItem: Product): Any? {
+                return when {
+                    oldItem.count != newItem.count -> {
+                        ProductChangePayload.Count(newItem.count)
+                    }
+
+                    else -> super.getChangePayload(oldItem, newItem)
+                }
+            }
         }
+    }
+
+    private sealed interface ProductChangePayload {
+        data class Count(val newCount: Int) : ProductChangePayload
     }
 }
