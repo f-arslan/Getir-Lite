@@ -13,7 +13,7 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
         container: ViewGroup?
     ): FragmentDetailBinding = FragmentDetailBinding.inflate(inflater, container, false)
 
-    override fun FragmentDetailBinding.initializeViews() {
+    override fun FragmentDetailBinding.onMain() {
         layoutTotalPriceCard.tvTotalPrice.text = "₺ 20.00"
     }
 }

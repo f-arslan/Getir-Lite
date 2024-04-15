@@ -1,5 +1,7 @@
 package com.patika.getir_lite.feature.listing.adapter
 
+import android.annotation.SuppressLint
+import android.content.res.TypedArray
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
@@ -7,7 +9,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.patika.getir_lite.R
 import com.patika.getir_lite.databinding.ItemActionCardBinding
 import com.patika.getir_lite.databinding.ItemListingBinding
 import com.patika.getir_lite.model.ItemActionType
@@ -16,10 +17,9 @@ import com.patika.getir_lite.model.ItemActionType.PLUS_DELETE
 import com.patika.getir_lite.model.ItemActionType.PLUS_MINUS
 import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.model.ProductEvent
+import com.patika.getir_lite.util.ext.formatPrice
 import com.patika.getir_lite.util.ext.setVisibility
 import com.patika.getir_lite.util.ext.toItemActionType
-import java.math.BigDecimal
-import java.util.Locale
 
 class ProductAdapter(private val events: (ProductEvent) -> Unit) :
     ListAdapter<Product, ProductAdapter.SuggestedProductViewHolder>(ItemDiff) {
@@ -58,7 +58,7 @@ class ProductAdapter(private val events: (ProductEvent) -> Unit) :
 
                 bindCount(product.count)
                 tvItemAttribute.text = product.attribute
-                tvItemPrice.text = formatPrice(product.price)
+                tvItemPrice.text = product.price.formatPrice()
                 ivItem.load(product.imageURL) {
                     crossfade(true)
                 }
@@ -79,10 +79,16 @@ class ProductAdapter(private val events: (ProductEvent) -> Unit) :
             }
         }
 
+        @SuppressLint("ResourceType")
         internal fun bindCount(count: Int) {
             binding.layoutActionButtons.tvItemCount.text = count.toString()
             val itemActionType = count.toItemActionType()
             binding.layoutActionButtons.setButtonVisibility(itemActionType)
+            if (itemActionType != ONLY_PLUS) {
+                binding.itemCard.strokeColor = itemColors.getColor(0, 0)
+            } else {
+                binding.itemCard.strokeColor = itemColors.getColor(1, 0)
+            }
         }
 
         private fun ItemActionCardBinding.setButtonVisibility(itemActionType: ItemActionType) {
@@ -92,11 +98,14 @@ class ProductAdapter(private val events: (ProductEvent) -> Unit) :
             btnAdd.setVisibility(true)
         }
 
-        private fun formatPrice(price: BigDecimal): String = String.format(
-            Locale.FRANCE,
-            binding.root.context.getString(R.string.price_format),
-            price
-        )
+
+        private val itemColors: TypedArray =
+            binding.root.context.obtainStyledAttributes(
+                intArrayOf(
+                    com.google.android.material.R.attr.colorPrimary,
+                    com.google.android.material.R.attr.colorTertiary
+                )
+            )
     }
 
 

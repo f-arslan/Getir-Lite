@@ -22,12 +22,12 @@ abstract class BaseFragment<T : ViewBinding> : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.initializeViews()
+        binding.onMain()
     }
 
     protected abstract fun inflateBinding(inflater: LayoutInflater, container: ViewGroup?): T
 
-    protected abstract fun T.initializeViews()
+    protected abstract fun T.onMain()
 
     override fun onDestroyView() {
         super.onDestroyView()

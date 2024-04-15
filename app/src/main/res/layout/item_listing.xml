@@ -3,10 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="@dimen/suggested_product_card_width"
-    android:layout_height="wrap_content"
-    android:layout_marginEnd="8dp">
+    android:layout_marginEnd="4dp"
+    android:layout_height="wrap_content">
 
-    <!-- Change Stroke Color to tertiary for selected state -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/item_card"
         android:layout_width="0dp"
@@ -39,33 +38,35 @@
 
     <TextView
         android:id="@+id/tv_item_price"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="?attr/colorPrimary"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/item_card"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/item_card"
         tools:text="₺0,00" />
 
     <TextView
         android:id="@+id/tv_item_name"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="end"
-        android:maxLines="1"
+        android:maxLines="2"
         android:textColor="?attr/colorOnSurface"
         android:textFontWeight="600"
         android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@+id/item_card"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_item_price"
-        tools:text="Product Name" />
+        tools:text="Product Name Product Name" />
 
     <TextView
         android:id="@+id/tv_item_attribute"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:fontFamily="@font/opensans_semibold"
@@ -73,6 +74,7 @@
         android:textColor="?attr/colorPrimaryInverse"
         android:textFontWeight="600"
         android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@+id/item_card"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_item_name"
         tools:text="Attribute" />

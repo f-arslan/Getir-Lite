@@ -79,7 +79,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:background="?attr/colorSurface"
-        android:paddingVertical="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
@@ -87,8 +88,8 @@
         <com.facebook.shimmer.ShimmerFrameLayout
             android:id="@+id/shimmer_layout"
             android:layout_width="match_parent"
-            android:layout_height="166dp"
-            android:paddingStart="8dp"
+            android:layout_height="182dp"
+            android:paddingStart="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -127,16 +128,84 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_product"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_product"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         android:background="?attr/colorSurface"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cl_suggested_product"
-        tools:listitem="@layout/item_listing" />
+        tools:ignore="RtlSymmetry">
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_layout_product"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="RtlSymmetry">
+
+            <GridLayout
+                android:id="@+id/gl_product_shimmer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:columnCount="3"
+                android:orientation="horizontal"
+                tools:ignore="RtlSymmetry">
+
+                <include
+                    style="@style/GridShimmerViewStyle"
+                    layout="@layout/item_listing_shimmer" />
+
+                <include
+                    style="@style/GridShimmerViewStyle"
+                    layout="@layout/item_listing_shimmer" />
+
+                <include
+                    style="@style/GridShimmerViewStyle"
+                    layout="@layout/item_listing_shimmer" />
+
+                <include
+                    style="@style/GridShimmerViewStyle"
+                    layout="@layout/item_listing_shimmer" />
+
+                <include
+                    style="@style/GridShimmerViewStyle"
+                    layout="@layout/item_listing_shimmer" />
+
+                <include
+                    style="@style/GridShimmerViewStyle"
+                    layout="@layout/item_listing_shimmer" />
+
+                <include layout="@layout/item_listing_shimmer" />
+
+                <include layout="@layout/item_listing_shimmer" />
+
+                <include layout="@layout/item_listing_shimmer" />
+            </GridLayout>
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_product"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="?attr/colorSurface"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="RtlSymmetry"
+            tools:listitem="@layout/item_listing" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

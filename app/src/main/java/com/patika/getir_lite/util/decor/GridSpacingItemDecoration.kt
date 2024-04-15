@@ -12,18 +12,8 @@ class GridSpacingItemDecoration : RecyclerView.ItemDecoration() {
         parent: RecyclerView,
         state: RecyclerView.State
     ) {
-        val position = parent.getChildAdapterPosition(view)
-        val column = position % 2
         val resources = view.context.resources
-        val spacing = resources.getDimensionPixelSize(R.dimen.margin_start_end)
-        val spacingBottom = resources.getDimensionPixelSize(R.dimen.margin_bottom)
-        val spanCount = 3
-        outRect.left = spacing - column * spacing / spanCount
-        outRect.right = (column + 1) * spacing / spanCount
-
-        if (position < spanCount) {
-            outRect.top = spacing
-        }
-        outRect.bottom = spacingBottom
+        val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
+        outRect.bottom = spacing
     }
 }

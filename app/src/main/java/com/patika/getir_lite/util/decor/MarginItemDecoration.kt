@@ -13,15 +13,10 @@ class MarginItemDecoration : RecyclerView.ItemDecoration() {
         state: RecyclerView.State
     ) {
         val position = parent.getChildAdapterPosition(view)
-        val itemCount = state.itemCount
-        val margin = view.context.resources.getDimensionPixelSize(R.dimen.margin_start_end)
+        val margin = view.context.resources.getDimensionPixelSize(R.dimen.margin_start_hor)
 
         if (position == 0) {
             outRect.left = margin
-        }
-
-        if (position == itemCount - 1) {
-            outRect.right = margin
         }
     }
 }
