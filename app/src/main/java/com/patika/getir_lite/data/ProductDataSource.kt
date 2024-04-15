@@ -6,6 +6,8 @@ import com.patika.getir_lite.data.local.ProductDao
 import com.patika.getir_lite.data.local.model.OrderStatus
 import com.patika.getir_lite.data.local.model.toDomainModel
 import com.patika.getir_lite.data.remote.RemoteRepository
+import com.patika.getir_lite.data.remote.model.ProductDto
+import com.patika.getir_lite.data.remote.model.SuggestedProductDto
 import com.patika.getir_lite.data.remote.model.toDomainModel
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.model.Order
@@ -74,12 +76,13 @@ class ProductDataSource @Inject constructor(
     override fun getBasketAsFlow(): Flow<Order?> =
         productDao.getActiveOrderAsFlow(OrderStatus.ON_BASKET).map { it?.toDomainModel() }
 
+    override fun getProductAsFlow(productId: Long): Flow<Product?> =
+        productDao.getProductByIdAsFlow(productId).map { it?.toDomainModel() }
+
     private suspend fun getProducts(): BaseResponse<List<Product>> =
         when (val response = remoteRepository.getProductDtos()) {
             is BaseResponse.Success -> {
-                val products = response.data.mapNotNull { dto ->
-                    dto.toDomainModel().takeIf { it.attribute != null }
-                }
+                val products = response.data.map(ProductDto::toDomainModel)
 
                 BaseResponse.Success(products)
             }
@@ -91,9 +94,7 @@ class ProductDataSource @Inject constructor(
     private suspend fun getSuggestedProducts(): BaseResponse<List<Product>> =
         when (val response = remoteRepository.getSuggestedProductDtos()) {
             is BaseResponse.Success -> {
-                val products = response.data.mapNotNull { dto ->
-                    dto.toDomainModel().takeIf { it.attribute != null }
-                }
+                val products = response.data.map(SuggestedProductDto::toDomainModel)
 
                 BaseResponse.Success(products)
             }

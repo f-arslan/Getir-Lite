@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,7 +24,12 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
 
     val products: Flow<BaseResponse<List<Product>>> = productRepository
         .getProductsAsFlow()
-        .map<List<Product>, BaseResponse<List<Product>>> { BaseResponse.Success(it) }
+        .transform {
+            when {
+                it.isEmpty() -> emit(BaseResponse.Loading)
+                else -> emit(BaseResponse.Success(it))
+            }
+        }
         .catch { error ->
             emit(BaseResponse.Error(TopLevelException.GenericException(error.message)))
         }
@@ -35,7 +41,12 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
 
     val suggestedProducts: Flow<BaseResponse<List<Product>>> = productRepository
         .getSuggestedProductsAsFlow()
-        .map<List<Product>, BaseResponse<List<Product>>> { BaseResponse.Success(it) }
+        .transform {
+            when {
+                it.isEmpty() -> emit(BaseResponse.Loading)
+                else -> emit(BaseResponse.Success(it))
+            }
+        }
         .catch { error ->
             emit(BaseResponse.Error(TopLevelException.GenericException(error.message)))
         }

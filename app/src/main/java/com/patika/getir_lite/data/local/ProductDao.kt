@@ -34,6 +34,9 @@ interface ProductDao {
     @Query("SELECT * FROM items WHERE id = :productId")
     suspend fun getProductById(productId: Long): ProductEntity
 
+    @Query("SELECT * FROM items WHERE id = :productId")
+    fun getProductByIdAsFlow(productId: Long): Flow<ProductEntity?>
+
     @Query("SELECT * FROM orders WHERE id = :orderId")
     suspend fun getOrderById(orderId: Long): OrderEntity
 

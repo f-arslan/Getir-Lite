@@ -12,5 +12,6 @@ interface ProductRepository {
     suspend fun syncWithRemote(): BaseResponse<Unit>
     fun getSuggestedProductsAsFlow(): Flow<List<Product>>
     fun getBasketAsFlow(): Flow<Order?>
+    fun getProductAsFlow(productId: Long): Flow<Product?>
     suspend fun updateItemCount(productId: Long, count: Int)
 }
