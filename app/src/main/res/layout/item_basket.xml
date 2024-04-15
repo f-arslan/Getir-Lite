@@ -76,7 +76,7 @@
 
     <include
         android:id="@+id/layout_item_action_basket"
-        layout="@layout/item_action_card_hr"
+        layout="@layout/item_action_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"

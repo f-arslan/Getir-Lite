@@ -14,9 +14,10 @@
     <dimen name="action_button_size_detail">48dp</dimen>
     <dimen name="action_text_width">38dp</dimen>
     <dimen name="action_text_height">32dp</dimen>
+    <dimen name="action_listing_size">32dp</dimen>
     <dimen name="action_text_width_detail">50dp</dimen>
     <dimen name="action_text_height_detail">48dp</dimen>
     <dimen name="action_card_corner_radius">8dp</dimen>
-    <dimen name="action_card_elevation">4dp</dimen>
+    <dimen name="action_card_elevation">3dp</dimen>
     <dimen name="action_text_size_detail">16sp</dimen>
 </resources>

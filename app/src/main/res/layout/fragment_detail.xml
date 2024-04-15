@@ -139,23 +139,24 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <Button
+            android:id="@+id/btn_add_to_basket"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_gravity="center"
-            android:id="@+id/btn_add_to_basket"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/bg_button"
             android:foreground="?attr/selectableItemBackground"
             android:text="@string/add_to_basket"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone" />
 
         <com.patika.getir_lite.ui.ActionCardHrView
             android:id="@+id/item_action_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone" />
+            android:visibility="visible" />
 
         <View
             android:layout_width="match_parent"

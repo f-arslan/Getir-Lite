@@ -1,47 +1,11 @@
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/cv_item_action"
-    style="@style/ListingCardViewStyle"
-    android:foreground="?attr/selectableItemBackground"
-    app:cardElevation="2dp"
-    app:strokeWidth="0dp">
-
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <LinearLayout
         android:id="@+id/ll_item_action"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="vertical">
-
-        <ImageButton
-            android:id="@+id/btn_add"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/colorSurface"
-            android:contentDescription="@string/add_item"
-            android:padding="4dp"
-            android:src="@drawable/ic_plus" />
-
-        <TextView
-            android:id="@+id/tv_item_count"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/colorPrimary"
-            android:gravity="center"
-            android:textColor="?attr/colorSurface"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            tools:text="4" />
-
-        <ImageButton
-            android:id="@+id/btn_delete"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/colorSurface"
-            android:contentDescription="@string/add_item"
-            android:padding="4dp"
-            android:src="@drawable/ic_trash" />
+        android:orientation="horizontal">
 
         <ImageButton
             android:id="@+id/btn_minus"
@@ -53,6 +17,34 @@
             android:src="@drawable/ic_minus"
             android:visibility="gone" />
 
-    </LinearLayout>
+        <ImageButton
+            android:id="@+id/btn_delete"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/colorSurface"
+            android:contentDescription="@string/add_item"
+            android:padding="4dp"
+            android:src="@drawable/ic_trash" />
 
-</com.google.android.material.card.MaterialCardView>
+        <TextView
+            android:id="@+id/tv_item_count"
+            android:layout_width="38dp"
+            android:layout_height="32dp"
+            android:background="?attr/colorPrimary"
+            android:gravity="center"
+            android:textColor="?attr/colorSurface"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="4" />
+
+        <ImageButton
+            android:id="@+id/btn_add"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/colorSurface"
+            android:contentDescription="@string/add_item"
+            android:padding="4dp"
+            android:src="@drawable/ic_plus" />
+
+    </LinearLayout>
+</merge>

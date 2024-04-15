@@ -11,7 +11,6 @@ import com.patika.getir_lite.ProductViewModel
 import com.patika.getir_lite.databinding.FragmentDetailBinding
 import com.patika.getir_lite.feature.BaseFragment
 import com.patika.getir_lite.model.BaseResponse
-import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.ProductEvent
 import com.patika.getir_lite.util.ext.formatPrice
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
@@ -50,7 +49,7 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
                 setOnMinusClickListener {
                     onEvent(ProductEvent.OnMinusClick(productId))
                 }
-                setOnAddClickListener {
+                setOnPlusClickListener {
                     onEvent(ProductEvent.OnPlusClick(productId))
                 }
             }

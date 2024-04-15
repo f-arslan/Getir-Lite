@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import com.patika.getir_lite.R
@@ -21,6 +22,7 @@ class ActionCardHrView @JvmOverloads constructor(
     private val btnDelete: ImageButton
     private val btnAdd: ImageButton
     private val tvCount: TextView
+    private val linearLayout: LinearLayout
 
     private var buttonContainerSize: Int =
         context.resources.getDimensionPixelSize(R.dimen.action_button_size)
@@ -29,6 +31,8 @@ class ActionCardHrView @JvmOverloads constructor(
     private var textContainerWidth: Int =
         context.resources.getDimensionPixelSize(R.dimen.action_text_width_detail)
     private var countTextSize = context.resources.getDimension(R.dimen.action_text_size_detail)
+
+    private var orientation = 0
 
     init {
         context.theme.obtainStyledAttributes(attrs, R.styleable.ActionCardHrView, 0, 0).apply {
@@ -49,12 +53,13 @@ class ActionCardHrView @JvmOverloads constructor(
                     R.styleable.ActionCardHrView_textSize,
                     resources.getDimension(R.dimen.action_text_size_detail)
                 ) / resources.displayMetrics.scaledDensity
+                orientation = getInt(R.styleable.ActionCardHrView_orientation, 0)
             } finally {
                 recycle()
             }
         }
 
-        LayoutInflater.from(context).inflate(R.layout.item_action_card_hr, this, true)
+        LayoutInflater.from(context).inflate(R.layout.item_action_card, this, true)
 
         radius = context.resources.getDimension(R.dimen.action_card_corner_radius)
         cardElevation = context.resources.getDimension(R.dimen.action_card_elevation)
@@ -63,9 +68,28 @@ class ActionCardHrView @JvmOverloads constructor(
         btnDelete = findViewById(R.id.btn_delete)
         btnAdd = findViewById(R.id.btn_add)
         tvCount = findViewById(R.id.tv_item_count)
+        linearLayout = findViewById(R.id.ll_item_action)
+        applyOrientation()
         setButtonSize(buttonContainerSize)
         setTextContainerSize(textContainerHeight, textContainerWidth)
         tvCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, countTextSize)
+    }
+
+    private fun applyOrientation() {
+        linearLayout.orientation = orientation
+        swapViewsInLinearLayout()
+    }
+
+    private fun swapViewsInLinearLayout() {
+        if (orientation == 1) {
+            linearLayout.removeView(btnMinus)
+            linearLayout.removeView(btnDelete)
+            linearLayout.removeView(btnAdd)
+
+            linearLayout.addView(btnAdd, 0)
+            linearLayout.addView(btnMinus)
+            linearLayout.addView(btnDelete)
+        }
     }
 
     fun setOnMinusClickListener(listener: OnClickListener) {
@@ -76,7 +100,7 @@ class ActionCardHrView @JvmOverloads constructor(
         btnDelete.setOnClickListener(listener)
     }
 
-    fun setOnAddClickListener(listener: OnClickListener) {
+    fun setOnPlusClickListener(listener: OnClickListener) {
         btnAdd.setOnClickListener(listener)
     }
 
@@ -84,6 +108,7 @@ class ActionCardHrView @JvmOverloads constructor(
         val actionType = count.toItemActionType()
         btnMinus.setVisibility(actionType == PLUS_MINUS)
         btnDelete.setVisibility(actionType == PLUS_DELETE)
+        tvCount.setVisibility(count != 0)
         tvCount.text = count.toString()
     }
 

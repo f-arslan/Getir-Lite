@@ -9,16 +9,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.patika.getir_lite.databinding.ItemActionCardBinding
 import com.patika.getir_lite.databinding.ItemListingBinding
-import com.patika.getir_lite.model.ItemActionType
 import com.patika.getir_lite.model.ItemActionType.ONLY_PLUS_IDLE
-import com.patika.getir_lite.model.ItemActionType.PLUS_DELETE
-import com.patika.getir_lite.model.ItemActionType.PLUS_MINUS
 import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.model.ProductEvent
+import com.patika.getir_lite.ui.ActionCardHrView
 import com.patika.getir_lite.util.ext.formatPrice
-import com.patika.getir_lite.util.ext.setVisibility
 import com.patika.getir_lite.util.ext.toItemActionType
 
 class ProductAdapter(
@@ -66,7 +62,7 @@ class ProductAdapter(
                     crossfade(true)
                 }
 
-                layoutActionButtons.handleActionOperations(product.entityId)
+                itemActionView.handleActionOperations(product.entityId)
 
                 binding.root.setOnClickListener {
                     onProductClick(product.entityId)
@@ -74,37 +70,28 @@ class ProductAdapter(
             }
         }
 
-        private fun ItemActionCardBinding.handleActionOperations(entityId: Long) {
-            btnAdd.setOnClickListener {
+        private fun ActionCardHrView.handleActionOperations(entityId: Long) {
+            setOnDeleteClickListener {
+                events(ProductEvent.OnDeleteClick(entityId))
+            }
+            setOnPlusClickListener {
                 events(ProductEvent.OnPlusClick(entityId))
             }
-            btnMinus.setOnClickListener {
+            setOnMinusClickListener {
                 events(ProductEvent.OnMinusClick(entityId))
-            }
-            btnDelete.setOnClickListener {
-                events(ProductEvent.OnDeleteClick(entityId))
             }
         }
 
         @SuppressLint("ResourceType")
         internal fun bindCount(count: Int) {
-            binding.layoutActionButtons.tvItemCount.text = count.toString()
+            binding.itemActionView.setCount(count)
             val itemActionType = count.toItemActionType()
-            binding.layoutActionButtons.setButtonVisibility(itemActionType)
             if (itemActionType != ONLY_PLUS_IDLE) {
                 binding.itemCard.strokeColor = itemColors.getColor(0, 0)
             } else {
                 binding.itemCard.strokeColor = itemColors.getColor(1, 0)
             }
         }
-
-        private fun ItemActionCardBinding.setButtonVisibility(itemActionType: ItemActionType) {
-            btnDelete.setVisibility(itemActionType == PLUS_DELETE)
-            tvItemCount.setVisibility(itemActionType != ONLY_PLUS_IDLE)
-            btnMinus.setVisibility(itemActionType == PLUS_MINUS)
-            btnAdd.setVisibility(true)
-        }
-
 
         private val itemColors: TypedArray =
             binding.root.context.obtainStyledAttributes(
@@ -114,7 +101,6 @@ class ProductAdapter(
                 )
             )
     }
-
 
     fun saveData(product: List<Product>) {
         asyncListDiffer.submitList(product)

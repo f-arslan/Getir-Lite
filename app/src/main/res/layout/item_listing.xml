@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="@dimen/suggested_product_card_width"
-    android:layout_marginEnd="4dp"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="4dp">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/item_card"
@@ -27,14 +27,19 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <include
-        android:id="@+id/layout_action_buttons"
-        layout="@layout/item_action_card"
+    <com.patika.getir_lite.ui.ActionCardHrView
+        android:id="@+id/item_action_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginEnd="-8dp"
+        app:buttonContainerSize="@dimen/action_listing_size"
         app:layout_constraintEnd_toEndOf="@id/item_card"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:orientation="vertical"
+        app:textContainerHeight="@dimen/action_listing_size"
+        app:textContainerWidth="@dimen/action_listing_size"
+        app:textSize="12sp" />
 
     <TextView
         android:id="@+id/tv_item_price"
