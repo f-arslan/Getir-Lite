@@ -40,6 +40,9 @@ interface ProductDao {
     @Query("SELECT * FROM orders WHERE orderStatus = :status")
     suspend fun getActiveOrder(status: OrderStatus): OrderEntity?
 
+    @Query("SELECT * FROM orders WHERE orderStatus = :status")
+    fun getActiveOrderAsFlow(status: OrderStatus): Flow<OrderEntity?>
+
     @Query("UPDATE orders SET totalPrice = totalPrice + :price WHERE id = :orderId")
     suspend fun updateActiveOrderPrice(orderId: Long, price: Double)
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.patika.getir_lite.data.ProductRepository
 import com.patika.getir_lite.model.BaseResponse
+import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.util.TopLevelException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,6 +38,18 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
         .map<List<Product>, BaseResponse<List<Product>>> { BaseResponse.Success(it) }
         .catch { error ->
             emit(BaseResponse.Error(TopLevelException.GenericException(error.message)))
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = BaseResponse.Loading
+        )
+
+    val basket: Flow<BaseResponse<Order?>> = productRepository
+        .getBasketAsFlow()
+        .map<Order?, BaseResponse<Order?>> { BaseResponse.Success(it) }
+        .catch { cause ->
+            emit(BaseResponse.Error(TopLevelException.GenericException(cause.message)))
         }
         .stateIn(
             scope = viewModelScope,

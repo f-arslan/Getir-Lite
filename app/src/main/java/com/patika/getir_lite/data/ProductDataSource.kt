@@ -3,12 +3,12 @@ package com.patika.getir_lite.data
 import com.patika.getir_lite.data.di.AppDispatchers.IO
 import com.patika.getir_lite.data.di.Dispatcher
 import com.patika.getir_lite.data.local.ProductDao
-import com.patika.getir_lite.data.local.model.OrderEntity
 import com.patika.getir_lite.data.local.model.OrderStatus
 import com.patika.getir_lite.data.local.model.toDomainModel
 import com.patika.getir_lite.data.remote.RemoteRepository
-import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.data.remote.model.toDomainModel
+import com.patika.getir_lite.model.BaseResponse
+import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.model.ProductType
 import com.patika.getir_lite.model.toItemEntity
@@ -70,6 +70,9 @@ class ProductDataSource @Inject constructor(
             BaseResponse.Error(TopLevelException.GenericException(e.message))
         }
     }
+
+    override fun getBasketAsFlow(): Flow<Order?> =
+        productDao.getActiveOrderAsFlow(OrderStatus.ON_BASKET).map { it?.toDomainModel() }
 
     private suspend fun getProducts(): BaseResponse<List<Product>> =
         when (val response = remoteRepository.getProductDtos()) {

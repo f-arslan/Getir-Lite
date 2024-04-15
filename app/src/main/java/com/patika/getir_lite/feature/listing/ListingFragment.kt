@@ -1,6 +1,5 @@
 package com.patika.getir_lite.feature.listing
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,16 +7,17 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.patika.getir_lite.ProductViewModel
-import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.databinding.FragmentListingBinding
 import com.patika.getir_lite.feature.BaseFragment
 import com.patika.getir_lite.feature.listing.adapter.ProductAdapter
+import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.util.decor.GridSpacingItemDecoration
 import com.patika.getir_lite.util.decor.MarginItemDecoration
+import com.patika.getir_lite.util.ext.formatPrice
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import java.math.BigDecimal
 
 @AndroidEntryPoint
 class ListingFragment : BaseFragment<FragmentListingBinding>() {
@@ -33,21 +33,18 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
     ): FragmentListingBinding =
         FragmentListingBinding.inflate(inflater, container, false)
 
-    override fun FragmentListingBinding.initializeViews() {
-        setupAdapter()
+    override fun FragmentListingBinding.onMain() {
+        setupRecycleViews()
         observeRemoteChanges()
     }
 
-    private fun FragmentListingBinding.setupAdapter() {
-        suggestedProductAdapter = ProductAdapter {
-
-        }
+    private fun FragmentListingBinding.setupRecycleViews() {
+        suggestedProductAdapter = ProductAdapter(viewModel::onEvent)
         rvSuggestedProduct.adapter = suggestedProductAdapter
         rvSuggestedProduct.addItemDecoration(MarginItemDecoration())
 
-        productAdapter = ProductAdapter { event -> viewModel.onEvent(event) }
-
-        rvProduct.layoutManager = GridLayoutManager(requireContext(), 3)
+        productAdapter = ProductAdapter(viewModel::onEvent)
+        rvProduct.layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
         rvProduct.addItemDecoration(GridSpacingItemDecoration())
         rvProduct.adapter = productAdapter
     }
@@ -57,10 +54,17 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
             products.collectLatest { response ->
                 when (response) {
                     is BaseResponse.Error -> {}
-                    BaseResponse.Loading -> {}
+                    BaseResponse.Loading -> {
+                        shimmerLayoutProduct.startShimmer()
+                    }
 
                     is BaseResponse.Success -> {
                         productAdapter.saveData(response.data)
+                        shimmerLayoutProduct.run {
+                            stopShimmer()
+                            visibility = View.GONE
+                        }
+                        rvProduct.visibility = View.VISIBLE
                     }
                 }
             }
@@ -75,16 +79,27 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
                     }
 
                     is BaseResponse.Success -> {
-                        delay(5000L)
                         suggestedProductAdapter.saveData(response.data)
                         shimmerLayout.run {
                             stopShimmer()
                             visibility = View.GONE
                         }
-                        rvSuggestedProduct.visibility = View.VISIBLE
                     }
                 }
             }
         }
+
+        scopeWithLifecycle {
+            basket.collectLatest { response ->
+                if (response is BaseResponse.Success) {
+                    val totalPrice = response.data?.totalPrice ?: BigDecimal.ZERO
+                    tvTotalPrice.text = totalPrice.formatPrice()
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val SPAN_COUNT = 3
     }
 }
