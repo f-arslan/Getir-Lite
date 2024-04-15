@@ -5,11 +5,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.patika.getir_lite.ProductViewModel
 import com.patika.getir_lite.databinding.FragmentListingBinding
 import com.patika.getir_lite.feature.BaseFragment
-import com.patika.getir_lite.feature.listing.adapter.ProductAdapter
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.util.decor.GridSpacingItemDecoration
 import com.patika.getir_lite.util.decor.MarginItemDecoration
@@ -34,29 +34,35 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         FragmentListingBinding.inflate(inflater, container, false)
 
     override fun FragmentListingBinding.onMain() {
-        setupRecycleViews()
         observeRemoteChanges()
+        setupRecycleViews()
     }
 
     private fun FragmentListingBinding.setupRecycleViews() {
-        suggestedProductAdapter = ProductAdapter(viewModel::onEvent)
+        suggestedProductAdapter = ProductAdapter(viewModel::onEvent, ::navigateToDetailFragment)
         rvSuggestedProduct.adapter = suggestedProductAdapter
         rvSuggestedProduct.addItemDecoration(MarginItemDecoration())
 
-        productAdapter = ProductAdapter(viewModel::onEvent)
+        productAdapter = ProductAdapter(viewModel::onEvent, ::navigateToDetailFragment)
         rvProduct.layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
         rvProduct.addItemDecoration(GridSpacingItemDecoration())
         rvProduct.adapter = productAdapter
+    }
+
+    private fun navigateToDetailFragment(productId: Long) {
+        if (isAdded) {
+            findNavController().navigate(
+                ListingFragmentDirections.actionListingFragmentToDetailFragment(productId)
+            )
+        }
     }
 
     private fun FragmentListingBinding.observeRemoteChanges() = with(productViewModel) {
         scopeWithLifecycle {
             products.collectLatest { response ->
                 when (response) {
-                    is BaseResponse.Error -> {}
-                    BaseResponse.Loading -> {
-                        shimmerLayoutProduct.startShimmer()
-                    }
+                    is BaseResponse.Error -> Unit
+                    BaseResponse.Loading -> shimmerLayoutProduct.startShimmer()
 
                     is BaseResponse.Success -> {
                         productAdapter.saveData(response.data)
@@ -73,10 +79,8 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         scopeWithLifecycle {
             suggestedProducts.collectLatest { response ->
                 when (response) {
-                    is BaseResponse.Error -> {}
-                    BaseResponse.Loading -> {
-                        shimmerLayout.startShimmer()
-                    }
+                    is BaseResponse.Error -> Unit
+                    BaseResponse.Loading -> shimmerLayout.startShimmer()
 
                     is BaseResponse.Success -> {
                         suggestedProductAdapter.saveData(response.data)
@@ -84,6 +88,7 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
                             stopShimmer()
                             visibility = View.GONE
                         }
+                        rvSuggestedProduct.visibility = View.VISIBLE
                     }
                 }
             }
@@ -91,9 +96,18 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
         scopeWithLifecycle {
             basket.collectLatest { response ->
-                if (response is BaseResponse.Success) {
-                    val totalPrice = response.data?.totalPrice ?: BigDecimal.ZERO
-                    tvTotalPrice.text = totalPrice.formatPrice()
+                when (response) {
+                    is BaseResponse.Error -> cvTotalPrice.visibility = View.GONE
+
+                    BaseResponse.Loading -> cvTotalPrice.visibility = View.GONE
+
+                    is BaseResponse.Success -> response.data?.totalPrice?.let {
+                        tvTotalPrice.text = it.formatPrice()
+                        cvTotalPrice.visibility =
+                            if (it > BigDecimal.ZERO) View.VISIBLE else View.GONE
+                    } ?: run {
+                        cvTotalPrice.visibility = View.GONE
+                    }
                 }
             }
         }
