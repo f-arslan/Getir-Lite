@@ -9,4 +9,14 @@
     <dimen name="product_image_size">104dp</dimen>
     <dimen name="product_card_width">112dp</dimen>
     <dimen name="basket_card_size">72dp</dimen>
+    <dimen name="detail_image_size">200dp</dimen>
+    <dimen name="action_button_size">48dp</dimen>
+    <dimen name="action_button_size_detail">48dp</dimen>
+    <dimen name="action_text_width">38dp</dimen>
+    <dimen name="action_text_height">32dp</dimen>
+    <dimen name="action_text_width_detail">50dp</dimen>
+    <dimen name="action_text_height_detail">48dp</dimen>
+    <dimen name="action_card_corner_radius">8dp</dimen>
+    <dimen name="action_card_elevation">4dp</dimen>
+    <dimen name="action_text_size_detail">16sp</dimen>
 </resources>

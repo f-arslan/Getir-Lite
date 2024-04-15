@@ -11,5 +11,6 @@
     <string name="add_to_basket">Sepete Ekle</string>
 
     <style name="product_name">Product Name</style>
+
     <style name="attribute">Attribute</style>
 </resources>

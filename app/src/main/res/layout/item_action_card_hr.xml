@@ -1,16 +1,11 @@
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/cv_item_action"
-    style="@style/ListingCardViewStyle">
-
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <LinearLayout
         android:id="@+id/ll_item_action"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal">
-
-        <!-- Set visibility to gone for the btn_minus button -->
 
         <ImageButton
             android:id="@+id/btn_minus"
@@ -52,5 +47,4 @@
             android:src="@drawable/ic_plus" />
 
     </LinearLayout>
-
-</androidx.cardview.widget.CardView>
+</merge>

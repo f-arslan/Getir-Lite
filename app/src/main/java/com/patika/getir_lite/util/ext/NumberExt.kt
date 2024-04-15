@@ -17,7 +17,7 @@ fun BigDecimal.formatPrice(): String {
 
 fun Int.toItemActionType(): ItemActionType {
     return when (this) {
-        0 -> ItemActionType.ONLY_PLUS
+        0 -> ItemActionType.ONLY_PLUS_IDLE
         1 -> ItemActionType.PLUS_DELETE
         else -> ItemActionType.PLUS_MINUS
     }

@@ -5,4 +5,5 @@ sealed class TopLevelException(message: String) : Exception(message) {
     class BodyNullException : TopLevelException("Body is null")
     class GenericException(message: String?) : TopLevelException("Generic exception: $message")
     class HttpException(code: Int) : TopLevelException("HTTP exception: $code")
+    class ProductNotFoundException : TopLevelException("Product not found")
 }

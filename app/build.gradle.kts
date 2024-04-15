@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.serilization)
+    alias(libs.plugins.navigation.safeArgsKotlin)
 }
 
 android {
@@ -56,6 +57,8 @@ dependencies {
     implementation(libs.androidx.viewbinding)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
     // Testing
     testImplementation(libs.junit)

@@ -12,7 +12,6 @@ import javax.inject.Inject
 class ListingViewModel @Inject constructor(
     private val productRepository: ProductRepository
 ) : ViewModel() {
-
     fun onEvent(event: ProductEvent) {
         viewModelScope.launch {
             when (event) {
@@ -27,8 +26,6 @@ class ListingViewModel @Inject constructor(
                 is ProductEvent.OnPlusClick -> {
                     productRepository.updateItemCount(event.entityId, 1)
                 }
-
-                is ProductEvent.OnProductClick -> TODO()
             }
         }
     }

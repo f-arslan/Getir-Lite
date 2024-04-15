@@ -16,12 +16,12 @@ data class ProductDto(
 )
 
 fun ProductDto.toDomainModel(): Product {
-    val attribute = attribute ?: shortDescription
+    val attribute = attribute ?: shortDescription ?: "No description available"
     return Product(
         id = id,
         name = name.trim(),
         price = price.toBigDecimal(),
-        attribute = attribute?.trim(),
+        attribute = attribute.trim(),
         imageURL = imageURL
     )
 }

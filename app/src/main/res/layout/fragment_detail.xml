@@ -46,6 +46,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/toolbar" />
@@ -69,11 +70,12 @@
 
             <ImageView
                 android:id="@+id/iv_food"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
+                android:layout_width="@dimen/detail_image_size"
+                android:layout_height="@dimen/detail_image_size"
                 android:layout_marginTop="16dp"
                 android:contentDescription="@string/food_image"
-                android:src="@drawable/food" />
+                android:scaleType="centerCrop"
+                tools:src="@drawable/food" />
 
             <TextView
                 android:id="@+id/tv_food_price"
@@ -97,8 +99,9 @@
                 android:layout_marginHorizontal="16dp"
                 android:ellipsize="end"
                 android:gravity="center"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:text="Product Name"
+                android:textAlignment="center"
                 android:textFontWeight="600"
                 android:textSize="16sp"
                 tools:text="Product Name" />
@@ -128,6 +131,7 @@
         app:layout_constraintTop_toBottomOf="@id/cv_total_price" />
 
     <FrameLayout
+        android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="90dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -138,18 +142,24 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_gravity="center"
+            android:id="@+id/btn_add_to_basket"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="5dp"
-            android:foreground="?attr/selectableItemBackground"
             android:background="@drawable/bg_button"
+            android:foreground="?attr/selectableItemBackground"
             android:text="@string/add_to_basket"
             android:textStyle="bold" />
+
+        <com.patika.getir_lite.ui.ActionCardHrView
+            android:id="@+id/item_action_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="10dp"
             android:background="@drawable/bg_top_shadow" />
     </FrameLayout>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

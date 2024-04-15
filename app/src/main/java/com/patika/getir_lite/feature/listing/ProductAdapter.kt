@@ -1,4 +1,4 @@
-package com.patika.getir_lite.feature.listing.adapter
+package com.patika.getir_lite.feature.listing
 
 import android.annotation.SuppressLint
 import android.content.res.TypedArray
@@ -12,7 +12,7 @@ import coil.load
 import com.patika.getir_lite.databinding.ItemActionCardBinding
 import com.patika.getir_lite.databinding.ItemListingBinding
 import com.patika.getir_lite.model.ItemActionType
-import com.patika.getir_lite.model.ItemActionType.ONLY_PLUS
+import com.patika.getir_lite.model.ItemActionType.ONLY_PLUS_IDLE
 import com.patika.getir_lite.model.ItemActionType.PLUS_DELETE
 import com.patika.getir_lite.model.ItemActionType.PLUS_MINUS
 import com.patika.getir_lite.model.Product
@@ -21,7 +21,10 @@ import com.patika.getir_lite.util.ext.formatPrice
 import com.patika.getir_lite.util.ext.setVisibility
 import com.patika.getir_lite.util.ext.toItemActionType
 
-class ProductAdapter(private val events: (ProductEvent) -> Unit) :
+class ProductAdapter(
+    private val events: (ProductEvent) -> Unit,
+    private val onProductClick: (productId: Long) -> Unit
+) :
     ListAdapter<Product, ProductAdapter.SuggestedProductViewHolder>(ItemDiff) {
 
     private val asyncListDiffer = AsyncListDiffer(this, ItemDiff)
@@ -64,6 +67,10 @@ class ProductAdapter(private val events: (ProductEvent) -> Unit) :
                 }
 
                 layoutActionButtons.handleActionOperations(product.entityId)
+
+                binding.root.setOnClickListener {
+                    onProductClick(product.entityId)
+                }
             }
         }
 
@@ -84,7 +91,7 @@ class ProductAdapter(private val events: (ProductEvent) -> Unit) :
             binding.layoutActionButtons.tvItemCount.text = count.toString()
             val itemActionType = count.toItemActionType()
             binding.layoutActionButtons.setButtonVisibility(itemActionType)
-            if (itemActionType != ONLY_PLUS) {
+            if (itemActionType != ONLY_PLUS_IDLE) {
                 binding.itemCard.strokeColor = itemColors.getColor(0, 0)
             } else {
                 binding.itemCard.strokeColor = itemColors.getColor(1, 0)
@@ -93,7 +100,7 @@ class ProductAdapter(private val events: (ProductEvent) -> Unit) :
 
         private fun ItemActionCardBinding.setButtonVisibility(itemActionType: ItemActionType) {
             btnDelete.setVisibility(itemActionType == PLUS_DELETE)
-            tvItemCount.setVisibility(itemActionType != ONLY_PLUS)
+            tvItemCount.setVisibility(itemActionType != ONLY_PLUS_IDLE)
             btnMinus.setVisibility(itemActionType == PLUS_MINUS)
             btnAdd.setVisibility(true)
         }
