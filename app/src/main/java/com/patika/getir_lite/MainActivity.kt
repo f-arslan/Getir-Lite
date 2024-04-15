@@ -34,13 +34,6 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        if (savedInstanceState == null) {
-            supportFragmentManager.commit {
-                setReorderingAllowed(true)
-                add<ListingFragment>(R.id.nav_host_fragment)
-            }
-        }
-
         handleInsets()
     }
 
