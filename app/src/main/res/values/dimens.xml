@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="margin_start_hor">16dp</dimen>
-    <dimen name="item_spacing">8dp</dimen>
+    <dimen name="item_spacing">6dp</dimen>
     <dimen name="grid_padding">16dp</dimen>
     <dimen name="margin_bottom">16dp</dimen>
     <dimen name="suggested_product_image_size">96dp</dimen>
@@ -18,6 +18,6 @@
     <dimen name="action_text_width_detail">50dp</dimen>
     <dimen name="action_text_height_detail">48dp</dimen>
     <dimen name="action_card_corner_radius">8dp</dimen>
-    <dimen name="action_card_elevation">3dp</dimen>
+    <dimen name="action_card_elevation">0dp</dimen>
     <dimen name="action_text_size_detail">16sp</dimen>
 </resources>

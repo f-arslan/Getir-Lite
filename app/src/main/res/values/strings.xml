@@ -6,9 +6,12 @@
     <string name="products">Ürünler</string>
     <string name="product_details">Ürün Detayı</string>
     <string name="_0_00">₺0,00</string>
+    <string name="_2000_00">₺20000,00</string>
     <string name="price_format">₺%,1.2f</string>
     <string name="cancel">Cancel</string>
     <string name="add_to_basket">Sepete Ekle</string>
+    <string name="basket_title">Sepetim</string>
+    <string name="basket_button_text">Siparişi Tamamla</string>
 
     <style name="product_name">Product Name</style>
 

@@ -6,6 +6,13 @@
     android:layout_height="wrap_content"
     android:layout_marginEnd="4dp">
 
+    <View
+        android:id="@+id/view_placeholder"
+        android:layout_width="wrap_content"
+        android:layout_height="2dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/item_card"
         android:layout_width="0dp"
@@ -13,7 +20,7 @@
         android:layout_marginTop="8dp"
         app:cardCornerRadius="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view_placeholder"
         app:strokeColor="?attr/colorTertiary"
         app:strokeWidth="1dp">
 
@@ -27,15 +34,16 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <com.patika.getir_lite.ui.ActionCardHrView
+    <com.patika.getir_lite.ui.ActionCardView
         android:id="@+id/item_action_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginEnd="-8dp"
+        android:translationZ="1dp"
         app:buttonContainerSize="@dimen/action_listing_size"
         app:layout_constraintEnd_toEndOf="@id/item_card"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view_placeholder"
         app:orientation="vertical"
         app:textContainerHeight="@dimen/action_listing_size"
         app:textContainerWidth="@dimen/action_listing_size"

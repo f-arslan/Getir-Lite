@@ -9,7 +9,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.patika.getir_lite.ProductViewModel
 import com.patika.getir_lite.databinding.FragmentListingBinding
+import com.patika.getir_lite.databinding.ItemListingBinding
 import com.patika.getir_lite.feature.BaseFragment
+import com.patika.getir_lite.feature.ProductAdapter
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.util.decor.GridSpacingItemDecoration
 import com.patika.getir_lite.util.decor.MarginItemDecoration
@@ -24,8 +26,8 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
     private val productViewModel: ProductViewModel by activityViewModels()
     private val viewModel: ListingViewModel by viewModels()
-    private lateinit var suggestedProductAdapter: ProductAdapter
-    private lateinit var productAdapter: ProductAdapter
+    private lateinit var suggestedProductAdapter: ProductAdapter<ItemListingBinding>
+    private lateinit var productAdapter: ProductAdapter<ItemListingBinding>
 
     override fun inflateBinding(
         inflater: LayoutInflater,
@@ -35,15 +37,34 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
     override fun FragmentListingBinding.onMain() {
         observeRemoteChanges()
-        setupRecycleViews()
+        setupRecycleViewsAndAdapter()
+        onBasketClick()
     }
 
-    private fun FragmentListingBinding.setupRecycleViews() {
-        suggestedProductAdapter = ProductAdapter(viewModel::onEvent, ::navigateToDetailFragment)
+    private fun FragmentListingBinding.onBasketClick() {
+        cvTotalPrice.setOnClickListener {
+            if (isAdded) {
+                findNavController().navigate(
+                    ListingFragmentDirections.actionListingFragmentToBasketFragment()
+                )
+            }
+        }
+    }
+
+    private fun FragmentListingBinding.setupRecycleViewsAndAdapter() {
+        suggestedProductAdapter = ProductAdapter(
+            bindingInflater = ItemListingBinding::inflate,
+            events = viewModel::onEvent,
+            onProductClick = ::navigateToDetailFragment
+        )
         rvSuggestedProduct.adapter = suggestedProductAdapter
         rvSuggestedProduct.addItemDecoration(MarginItemDecoration())
 
-        productAdapter = ProductAdapter(viewModel::onEvent, ::navigateToDetailFragment)
+        productAdapter = ProductAdapter(
+            bindingInflater = ItemListingBinding::inflate,
+            events = viewModel::onEvent,
+            onProductClick = ::navigateToDetailFragment
+        )
         rvProduct.layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
         rvProduct.addItemDecoration(GridSpacingItemDecoration())
         rvProduct.adapter = productAdapter

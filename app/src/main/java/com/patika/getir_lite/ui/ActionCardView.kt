@@ -1,9 +1,13 @@
 package com.patika.getir_lite.ui
 
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -14,7 +18,7 @@ import com.patika.getir_lite.model.ItemActionType.PLUS_MINUS
 import com.patika.getir_lite.util.ext.setVisibility
 import com.patika.getir_lite.util.ext.toItemActionType
 
-class ActionCardHrView @JvmOverloads constructor(
+class ActionCardView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : CardView(context, attrs, defStyleAttr) {
 
@@ -35,6 +39,30 @@ class ActionCardHrView @JvmOverloads constructor(
     private var orientation = 0
 
     init {
+        loadAttributes(attrs)
+
+        LayoutInflater.from(context).inflate(R.layout.item_action_card, this, true)
+
+        radius = context.resources.getDimension(R.dimen.action_card_corner_radius)
+        cardElevation = context.resources.getDimension(R.dimen.action_card_elevation)
+
+        btnMinus = findViewById(R.id.btn_minus)
+        btnDelete = findViewById(R.id.btn_delete)
+        btnAdd = findViewById(R.id.btn_add)
+        tvCount = findViewById(R.id.tv_item_count)
+        linearLayout = findViewById(R.id.ll_item_action)
+
+        applyOrientation()
+        setViewSize(btnMinus, buttonContainerSize)
+        setViewSize(btnDelete, buttonContainerSize)
+        setViewSize(btnAdd, buttonContainerSize)
+
+        setTextContainerSize(textContainerHeight, textContainerWidth)
+        tvCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, countTextSize)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun loadAttributes(attrs: AttributeSet?) {
         context.theme.obtainStyledAttributes(attrs, R.styleable.ActionCardHrView, 0, 0).apply {
             try {
                 buttonContainerSize = getDimensionPixelSize(
@@ -53,26 +81,11 @@ class ActionCardHrView @JvmOverloads constructor(
                     R.styleable.ActionCardHrView_textSize,
                     resources.getDimension(R.dimen.action_text_size_detail)
                 ) / resources.displayMetrics.scaledDensity
-                orientation = getInt(R.styleable.ActionCardHrView_orientation, 0)
+                orientation = getInt(R.styleable.ActionCardHrView_orientation, orientation)
             } finally {
                 recycle()
             }
         }
-
-        LayoutInflater.from(context).inflate(R.layout.item_action_card, this, true)
-
-        radius = context.resources.getDimension(R.dimen.action_card_corner_radius)
-        cardElevation = context.resources.getDimension(R.dimen.action_card_elevation)
-
-        btnMinus = findViewById(R.id.btn_minus)
-        btnDelete = findViewById(R.id.btn_delete)
-        btnAdd = findViewById(R.id.btn_add)
-        tvCount = findViewById(R.id.tv_item_count)
-        linearLayout = findViewById(R.id.ll_item_action)
-        applyOrientation()
-        setButtonSize(buttonContainerSize)
-        setTextContainerSize(textContainerHeight, textContainerWidth)
-        tvCount.setTextSize(TypedValue.COMPLEX_UNIT_SP, countTextSize)
     }
 
     private fun applyOrientation() {
@@ -119,12 +132,11 @@ class ActionCardHrView @JvmOverloads constructor(
         tvCount.layoutParams = params
     }
 
-    private fun setButtonSize(size: Int) {
-        val params = btnMinus.layoutParams
-        params.width = size
-        params.height = size
-        btnMinus.layoutParams = params
-        btnDelete.layoutParams = params
-        btnAdd.layoutParams = params
+    private fun setViewSize(view: View, size: Int) {
+        val params = view.layoutParams.apply {
+            width = size
+            height = size
+        }
+        view.layoutParams = params
     }
 }
