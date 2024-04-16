@@ -1,6 +1,7 @@
 package com.patika.getir_lite.data
 
 import com.patika.getir_lite.model.BaseResponse
+import com.patika.getir_lite.model.BasketWithProducts
 import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.Product
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +13,7 @@ interface ProductRepository {
     suspend fun syncWithRemote(): BaseResponse<Unit>
     fun getSuggestedProductsAsFlow(): Flow<List<Product>>
     fun getBasketAsFlow(): Flow<Order?>
+    fun getBasketWithProductsAsFlow(): Flow<BasketWithProducts?>
     fun getProductAsFlow(productId: Long): Flow<Product?>
     suspend fun updateItemCount(productId: Long, count: Int)
 }

@@ -5,9 +5,10 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.patika.getir_lite.data.local.model.ProductEntity
 import com.patika.getir_lite.data.local.model.OrderEntity
 import com.patika.getir_lite.data.local.model.OrderStatus
+import com.patika.getir_lite.data.local.model.ProductEntity
+import com.patika.getir_lite.model.BasketWithProducts
 import com.patika.getir_lite.model.ProductType
 import kotlinx.coroutines.flow.Flow
 
@@ -74,4 +75,8 @@ interface ProductDao {
             updateItemCountOrder(productId = productId, count = 0, orderId = -1)
         }
     }
+
+    @Transaction
+    @Query("SELECT * FROM orders WHERE orderStatus = :orderStatus")
+    fun getBasketWithProducts(orderStatus: OrderStatus): Flow<BasketWithProducts?>
 }

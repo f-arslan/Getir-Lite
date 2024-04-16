@@ -3,6 +3,7 @@ package com.patika.getir_lite.data
 import com.patika.getir_lite.data.di.AppDispatchers.IO
 import com.patika.getir_lite.data.di.Dispatcher
 import com.patika.getir_lite.data.local.ProductDao
+import com.patika.getir_lite.data.local.model.OrderEntity
 import com.patika.getir_lite.data.local.model.OrderStatus
 import com.patika.getir_lite.data.local.model.toDomainModel
 import com.patika.getir_lite.data.remote.RemoteRepository
@@ -10,18 +11,22 @@ import com.patika.getir_lite.data.remote.model.ProductDto
 import com.patika.getir_lite.data.remote.model.SuggestedProductDto
 import com.patika.getir_lite.data.remote.model.toDomainModel
 import com.patika.getir_lite.model.BaseResponse
+import com.patika.getir_lite.model.BasketWithProducts
 import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.model.ProductType
 import com.patika.getir_lite.model.toItemEntity
 import com.patika.getir_lite.util.TopLevelException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -55,6 +60,7 @@ class ProductDataSource @Inject constructor(
                 val localProduct = localProductsDeferred.await()
 
                 if (localProduct.isEmpty()) {
+                    productDao.insertOrder(OrderEntity(-1))
                     if (remoteProducts is BaseResponse.Success) {
                         saveDataToLocalFirstTime(remoteProducts.data)
                         _dataSyncResult.update { it + DataSyncResult.PRODUCT_SYNCED }
@@ -78,6 +84,9 @@ class ProductDataSource @Inject constructor(
 
     override fun getProductAsFlow(productId: Long): Flow<Product?> =
         productDao.getProductByIdAsFlow(productId).map { it?.toDomainModel() }
+
+    override fun getBasketWithProductsAsFlow(): Flow<BasketWithProducts?> =
+        productDao.getBasketWithProducts(OrderStatus.ON_BASKET)
 
     private suspend fun getProducts(): BaseResponse<List<Product>> =
         when (val response = remoteRepository.getProductDtos()) {
