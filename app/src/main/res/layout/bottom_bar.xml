@@ -1,0 +1,31 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/frameLayout"
+    android:layout_width="match_parent"
+    android:layout_height="90dp">
+
+    <Button
+        android:id="@+id/btn_add_to_basket"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/bg_button"
+        android:foreground="?attr/selectableItemBackground"
+        android:text="@string/add_to_basket"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <com.patika.getir_lite.ui.ActionCardView
+        android:id="@+id/item_action_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:translationZ="3dp"
+        android:visibility="visible" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:background="@drawable/bg_top_shadow" />
+</FrameLayout>
