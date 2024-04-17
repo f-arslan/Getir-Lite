@@ -23,7 +23,7 @@ import com.patika.getir_lite.util.ext.toItemActionType
 class ProductAdapter<B : ViewBinding>(
     private val bindingInflater: (inflater: LayoutInflater, parent: ViewGroup, attachToParent: Boolean) -> B,
     private val events: (ProductEvent) -> Unit,
-    private val onProductClick: (productId: Long) -> Unit
+    private val onProductClick: (productId: Long) -> Unit = {}
 ) : ListAdapter<Product, ProductAdapter.ProductViewHolder<B>>(ItemDiff) {
 
     private val asyncListDiffer = AsyncListDiffer(this, ItemDiff)
@@ -56,8 +56,7 @@ class ProductAdapter<B : ViewBinding>(
         private val binding: B,
         private val events: (ProductEvent) -> Unit,
         private val onProductClick: (productId: Long) -> Unit
-    ) :
-        RecyclerView.ViewHolder(binding.root) {
+    ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(product: Product) {
             when (binding) {
                 is ItemListingBinding -> binding.bindListingBinding(product)
@@ -91,20 +90,16 @@ class ProductAdapter<B : ViewBinding>(
             bindCount(product.count)
         }
 
-        @SuppressLint("ResourceType")
         fun bindCount(count: Int) {
             when (binding) {
-                is ItemListingBinding -> updateCardView(
-                    count,
-                    binding.itemActionView,
-                    binding.itemCard
-                )
+                is ItemListingBinding -> {
+                    binding.itemActionView.setCount(count)
+                    updateCardView(count, binding.itemCard)
+                }
 
-                is ItemBasketBinding -> updateCardView(
-                    count,
-                    binding.itemActionView,
-                    binding.itemCard
-                )
+                is ItemBasketBinding -> {
+                    binding.itemActionView.setCount(count)
+                }
 
                 else -> throw IllegalArgumentException("Unknown binding type")
             }
@@ -113,10 +108,8 @@ class ProductAdapter<B : ViewBinding>(
         @SuppressLint("ResourceType")
         fun updateCardView(
             count: Int,
-            itemActionView: ActionCardView,
             itemCard: MaterialCardView,
         ) {
-            itemActionView.setCount(count)
             val itemActionType = count.toItemActionType()
             itemCard.strokeColor = if (itemActionType != ONLY_PLUS_IDLE) {
                 itemColors.getColor(0, 0)

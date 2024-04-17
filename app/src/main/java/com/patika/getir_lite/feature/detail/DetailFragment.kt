@@ -31,7 +31,7 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
     ): FragmentDetailBinding = FragmentDetailBinding.inflate(inflater, container, false)
 
     override fun FragmentDetailBinding.onMain() {
-        val productId = args.productId.also(::println)
+        val productId = args.productId
         viewModel.initializeProduct(productId)
 
         observeProductState()
@@ -41,7 +41,7 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
     }
 
     private fun FragmentDetailBinding.listenActionClickListeners(productId: Long) =
-        with(viewModel) {
+        with(productViewModel) {
             with(itemActionView) {
                 setOnDeleteClickListener {
                     onEvent(ProductEvent.OnDeleteClick(productId))

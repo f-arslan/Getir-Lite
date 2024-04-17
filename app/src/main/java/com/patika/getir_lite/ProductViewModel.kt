@@ -7,6 +7,7 @@ import com.patika.getir_lite.data.ProductRepository
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.Product
+import com.patika.getir_lite.model.ProductEvent
 import com.patika.getir_lite.util.TopLevelException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -71,5 +72,24 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
     @MainThread
     fun initializeProductData() = viewModelScope.launch {
         productRepository.syncWithRemote()
+    }
+
+
+    fun onEvent(event: ProductEvent) {
+        viewModelScope.launch {
+            when (event) {
+                is ProductEvent.OnDeleteClick -> {
+                    productRepository.updateItemCount(event.entityId, -1)
+                }
+
+                is ProductEvent.OnMinusClick -> {
+                    productRepository.updateItemCount(event.entityId, -1)
+                }
+
+                is ProductEvent.OnPlusClick -> {
+                    productRepository.updateItemCount(event.entityId, 1)
+                }
+            }
+        }
     }
 }

@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.patika.getir_lite.data.ProductRepository
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.model.Product
-import com.patika.getir_lite.model.ProductEvent
 import com.patika.getir_lite.util.TopLevelException.ProductNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,24 +28,6 @@ class DetailViewModel @Inject constructor(
                 _productState.update { BaseResponse.Success(product) }
             } ?: run {
                 _productState.update { BaseResponse.Error(ProductNotFoundException()) }
-            }
-        }
-    }
-
-    fun onEvent(event: ProductEvent) {
-        viewModelScope.launch {
-            when (event) {
-                is ProductEvent.OnDeleteClick -> {
-                    productRepository.updateItemCount(event.entityId, -1)
-                }
-
-                is ProductEvent.OnMinusClick -> {
-                    productRepository.updateItemCount(event.entityId, -1)
-                }
-
-                is ProductEvent.OnPlusClick -> {
-                    productRepository.updateItemCount(event.entityId, 1)
-                }
             }
         }
     }
