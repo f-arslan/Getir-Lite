@@ -12,6 +12,10 @@
     <string name="add_to_basket">Sepete Ekle</string>
     <string name="basket_title">Sepetim</string>
     <string name="basket_button_text">Siparişi Tamamla</string>
+    <string name="basket_delete_dialog_text">Sepetini boşaltmak istediğinden emin misin?</string>
+    <string name="no">Hayır</string>
+    <string name="yes">Evet</string>
+    <string name="suggested_product">Önerilen Ürünler</string>
 
     <style name="product_name">Product Name</style>
 

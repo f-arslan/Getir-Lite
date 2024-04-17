@@ -4,6 +4,7 @@
     <dimen name="item_spacing">6dp</dimen>
     <dimen name="grid_padding">16dp</dimen>
     <dimen name="margin_bottom">16dp</dimen>
+    <dimen name="margin_8">8dp</dimen>
     <dimen name="suggested_product_image_size">96dp</dimen>
     <dimen name="suggested_product_card_width">110dp</dimen>
     <dimen name="product_image_size">104dp</dimen>
@@ -20,4 +21,6 @@
     <dimen name="action_card_corner_radius">8dp</dimen>
     <dimen name="action_card_elevation">0dp</dimen>
     <dimen name="action_text_size_detail">16sp</dimen>
+    <dimen name="bottom_bar_height">90dp</dimen>
+    <dimen name="bottom_bar_margin">102dp</dimen>
 </resources>

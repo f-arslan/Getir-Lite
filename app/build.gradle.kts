@@ -92,4 +92,7 @@ dependencies {
 
     // Shimmer
     implementation(libs.shimmer)
+
+    // RecyclerView
+    implementation(libs.androidx.recyclerview)
 }

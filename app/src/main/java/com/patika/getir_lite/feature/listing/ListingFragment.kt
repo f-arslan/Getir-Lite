@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.patika.getir_lite.ProductViewModel
@@ -25,7 +24,6 @@ import java.math.BigDecimal
 class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
     private val productViewModel: ProductViewModel by activityViewModels()
-    private val viewModel: ListingViewModel by viewModels()
     private lateinit var suggestedProductAdapter: ProductAdapter<ItemListingBinding>
     private lateinit var productAdapter: ProductAdapter<ItemListingBinding>
 
@@ -54,15 +52,16 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
     private fun FragmentListingBinding.setupRecycleViewsAndAdapter() {
         suggestedProductAdapter = ProductAdapter(
             bindingInflater = ItemListingBinding::inflate,
-            events = viewModel::onEvent,
+            events = productViewModel::onEvent,
             onProductClick = ::navigateToDetailFragment
         )
-        rvSuggestedProduct.adapter = suggestedProductAdapter
-        rvSuggestedProduct.addItemDecoration(MarginItemDecoration())
-
+        layoutSuggestedProduct.rvSuggestedProduct.apply {
+            adapter = suggestedProductAdapter
+            addItemDecoration(MarginItemDecoration())
+        }
         productAdapter = ProductAdapter(
             bindingInflater = ItemListingBinding::inflate,
-            events = viewModel::onEvent,
+            events = productViewModel::onEvent,
             onProductClick = ::navigateToDetailFragment
         )
         rvProduct.layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
@@ -98,18 +97,20 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         }
 
         scopeWithLifecycle {
-            suggestedProducts.collectLatest { response ->
-                when (response) {
-                    is BaseResponse.Error -> Unit
-                    BaseResponse.Loading -> shimmerLayout.startShimmer()
+            layoutSuggestedProduct.apply {
+                suggestedProducts.collectLatest { response ->
+                    when (response) {
+                        is BaseResponse.Error -> Unit
+                        BaseResponse.Loading -> shimmerLayout.startShimmer()
 
-                    is BaseResponse.Success -> {
-                        suggestedProductAdapter.saveData(response.data)
-                        shimmerLayout.run {
-                            stopShimmer()
-                            visibility = View.GONE
+                        is BaseResponse.Success -> {
+                            suggestedProductAdapter.saveData(response.data)
+                            shimmerLayout.run {
+                                stopShimmer()
+                                visibility = View.GONE
+                            }
+                            rvSuggestedProduct.visibility = View.VISIBLE
                         }
-                        rvSuggestedProduct.visibility = View.VISIBLE
                     }
                 }
             }

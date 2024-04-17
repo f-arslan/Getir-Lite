@@ -10,7 +10,6 @@
         android:id="@+id/layout_toolbar"
         layout="@layout/toolbar" />
 
-
     <ImageButton
         android:id="@+id/btn_cancel"
         android:layout_width="wrap_content"
@@ -18,8 +17,7 @@
         android:layout_marginEnd="16dp"
         android:background="@null"
         android:contentDescription="@string/cancel"
-        android:padding="6dp"
-        android:src="@drawable/ic_trash"
+        android:src="@drawable/ic_trash_big"
         app:layout_constraintBottom_toBottomOf="@id/layout_toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/layout_toolbar"
@@ -29,27 +27,26 @@
         android:id="@+id/rv_basket"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="?attr/colorSurface"
         android:orientation="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:layout_constraintTop_toBottomOf="@id/layout_toolbar"
+        app:layout_constraintBottom_toTopOf="@id/frameLayout"
+        tools:itemCount="3"
         tools:listitem="@layout/item_basket" />
-
 
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
-        android:layout_height="90dp"
+        android:layout_height="@dimen/bottom_bar_height"
         android:background="?attr/colorSurface"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-
         app:layout_constraintStart_toStartOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="5dp"
             android:padding="12dp">
 
             <Button
@@ -101,8 +98,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="10dp"
-            android:background="@drawable/bg_top_shadow" />
+            android:background="@drawable/bg_bottom_shadow" />
+
     </FrameLayout>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>
