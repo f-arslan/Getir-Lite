@@ -73,94 +73,50 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <include
-        android:id="@+id/layout_suggested_product"
-        layout="@layout/suggested_product"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <FrameLayout
         android:id="@+id/cl_product"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
         android:background="?attr/colorSurface"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layout_suggested_product"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         tools:ignore="RtlSymmetry">
 
-        <com.facebook.shimmer.ShimmerFrameLayout
-            android:id="@+id/shimmer_layout_product"
+        <LinearLayout
+            android:id="@+id/ll_shimmer_product"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="RtlSymmetry">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <GridLayout
-                android:id="@+id/gl_product_shimmer"
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:columnCount="3"
-                android:orientation="horizontal"
-                tools:ignore="RtlSymmetry">
+                android:layout_height="16dp"
+                android:background="@color/getir_background" />
 
-                <include
-                    style="@style/GridShimmerViewStyle"
-                    layout="@layout/item_listing_shimmer" />
+            <include
+                android:id="@+id/shimmer_layout_suggested"
+                layout="@layout/suggested_product_shimmer" />
 
-                <include
-                    style="@style/GridShimmerViewStyle"
-                    layout="@layout/item_listing_shimmer" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp"
+                android:background="@color/getir_background" />
 
-                <include
-                    style="@style/GridShimmerViewStyle"
-                    layout="@layout/item_listing_shimmer" />
+            <include
+                android:id="@+id/shimmer_layout_product"
+                layout="@layout/grid_shimmer_layout" />
 
-                <include
-                    style="@style/GridShimmerViewStyle"
-                    layout="@layout/item_listing_shimmer" />
-
-                <include
-                    style="@style/GridShimmerViewStyle"
-                    layout="@layout/item_listing_shimmer" />
-
-                <include
-                    style="@style/GridShimmerViewStyle"
-                    layout="@layout/item_listing_shimmer" />
-
-                <include layout="@layout/item_listing_shimmer" />
-
-                <include layout="@layout/item_listing_shimmer" />
-
-                <include layout="@layout/item_listing_shimmer" />
-            </GridLayout>
-
-        </com.facebook.shimmer.ShimmerFrameLayout>
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_product"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="match_parent"
             android:background="?attr/colorSurface"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="RtlSymmetry"
             tools:listitem="@layout/item_listing" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

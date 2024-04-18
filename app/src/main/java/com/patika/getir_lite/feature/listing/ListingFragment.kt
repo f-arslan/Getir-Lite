@@ -5,26 +5,29 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.patika.getir_lite.ProductViewModel
 import com.patika.getir_lite.databinding.FragmentListingBinding
 import com.patika.getir_lite.databinding.ItemListingBinding
 import com.patika.getir_lite.feature.BaseFragment
-import com.patika.getir_lite.feature.ProductAdapter
+import com.patika.getir_lite.feature.adapter.ProductAdapter
+import com.patika.getir_lite.feature.adapter.ProductListAdapter
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.util.decor.GridSpacingItemDecoration
-import com.patika.getir_lite.util.decor.MarginItemDecoration
 import com.patika.getir_lite.util.ext.formatPrice
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import java.math.BigDecimal
 
 @AndroidEntryPoint
 class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
     private val productViewModel: ProductViewModel by activityViewModels()
-    private lateinit var suggestedProductAdapter: ProductAdapter<ItemListingBinding>
+    private lateinit var suggestedProductListAdapter: ProductListAdapter
     private lateinit var productAdapter: ProductAdapter<ItemListingBinding>
 
     override fun inflateBinding(
@@ -34,8 +37,8 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         FragmentListingBinding.inflate(inflater, container, false)
 
     override fun FragmentListingBinding.onMain() {
-        observeRemoteChanges()
         setupRecycleViewsAndAdapter()
+        observeRemoteChanges()
         onBasketClick()
     }
 
@@ -50,23 +53,29 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
     }
 
     private fun FragmentListingBinding.setupRecycleViewsAndAdapter() {
-        suggestedProductAdapter = ProductAdapter(
-            bindingInflater = ItemListingBinding::inflate,
+        suggestedProductListAdapter = ProductListAdapter(
             events = productViewModel::onEvent,
             onProductClick = ::navigateToDetailFragment
         )
-        layoutSuggestedProduct.rvSuggestedProduct.apply {
-            adapter = suggestedProductAdapter
-            addItemDecoration(MarginItemDecoration())
-        }
+
         productAdapter = ProductAdapter(
             bindingInflater = ItemListingBinding::inflate,
             events = productViewModel::onEvent,
             onProductClick = ::navigateToDetailFragment
         )
-        rvProduct.layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
+
+        val layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
+        val concatAdapter = ConcatAdapter(
+            suggestedProductListAdapter,
+            productAdapter
+        )
+
+        rvProduct.layoutManager = layoutManager
+        rvProduct.adapter = concatAdapter
         rvProduct.addItemDecoration(GridSpacingItemDecoration())
-        rvProduct.adapter = productAdapter
+        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int = if (position == 0) SPAN_COUNT else 1
+        }
     }
 
     private fun navigateToDetailFragment(productId: Long) {
@@ -78,39 +87,31 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
     }
 
     private fun FragmentListingBinding.observeRemoteChanges() = with(productViewModel) {
+        val shimmerLayout = shimmerLayoutProduct.shimmerLayout
+        val suggestedShimmerLayout = shimmerLayoutSuggested.shimmerLayout
+
         scopeWithLifecycle {
             products.collectLatest { response ->
                 when (response) {
                     is BaseResponse.Error -> Unit
-                    BaseResponse.Loading -> shimmerLayoutProduct.startShimmer()
+                    BaseResponse.Loading -> shimmerLayout.startShimmer()
 
                     is BaseResponse.Success -> {
                         productAdapter.saveData(response.data)
-                        shimmerLayoutProduct.run {
-                            stopShimmer()
-                            visibility = View.GONE
-                        }
-                        rvProduct.visibility = View.VISIBLE
+                        closeShimmer(shimmerLayout, suggestedShimmerLayout)
                     }
                 }
             }
         }
 
         scopeWithLifecycle {
-            layoutSuggestedProduct.apply {
-                suggestedProducts.collectLatest { response ->
-                    when (response) {
-                        is BaseResponse.Error -> Unit
-                        BaseResponse.Loading -> shimmerLayout.startShimmer()
+            suggestedProducts.collectLatest { response ->
+                when (response) {
+                    is BaseResponse.Error -> Unit
+                    BaseResponse.Loading -> Unit
 
-                        is BaseResponse.Success -> {
-                            suggestedProductAdapter.saveData(response.data)
-                            shimmerLayout.run {
-                                stopShimmer()
-                                visibility = View.GONE
-                            }
-                            rvSuggestedProduct.visibility = View.VISIBLE
-                        }
+                    is BaseResponse.Success -> {
+                        suggestedProductListAdapter.saveData(response.data)
                     }
                 }
             }
@@ -130,6 +131,34 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
                     } ?: run {
                         cvTotalPrice.visibility = View.GONE
                     }
+                }
+            }
+        }
+    }
+
+    private fun FragmentListingBinding.closeShimmer(
+        shimmerLayout: ShimmerFrameLayout,
+        suggestedShimmerLayout: ShimmerFrameLayout
+    ) {
+        shimmerLayout.apply {
+            stopShimmer()
+            visibility = View.GONE
+        }
+        suggestedShimmerLayout.apply {
+            stopShimmer()
+            visibility = View.GONE
+        }
+        rvProduct.visibility = View.VISIBLE
+    }
+
+    override fun onResume() {
+        super.onResume()
+        scopeWithLifecycle {
+            val isEmpty = suggestedProductListAdapter.isProductAdapterEmpty()
+            if (isEmpty) {
+                val response = productViewModel.suggestedProducts.first()
+                if (response is BaseResponse.Success) {
+                    suggestedProductListAdapter.saveData(response.data)
                 }
             }
         }
