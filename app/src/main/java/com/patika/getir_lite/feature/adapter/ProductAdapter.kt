@@ -1,4 +1,4 @@
-package com.patika.getir_lite.feature
+package com.patika.getir_lite.feature.adapter
 
 import android.annotation.SuppressLint
 import android.content.res.TypedArray
@@ -27,6 +27,7 @@ class ProductAdapter<B : ViewBinding>(
 ) : ListAdapter<Product, ProductAdapter.ProductViewHolder<B>>(ItemDiff) {
 
     private val asyncListDiffer = AsyncListDiffer(this, ItemDiff)
+    override fun getItemCount(): Int = asyncListDiffer.currentList.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder<B> {
         val inflater = LayoutInflater.from(parent.context)
@@ -49,8 +50,6 @@ class ProductAdapter<B : ViewBinding>(
             else -> onBindViewHolder(holder, position)
         }
     }
-
-    override fun getItemCount(): Int = asyncListDiffer.currentList.size
 
     class ProductViewHolder<B : ViewBinding>(
         private val binding: B,
@@ -139,7 +138,6 @@ class ProductAdapter<B : ViewBinding>(
                 )
             )
     }
-
     fun saveData(product: List<Product>) {
         asyncListDiffer.submitList(product)
     }

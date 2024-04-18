@@ -11,11 +11,13 @@
         layout="@layout/toolbar" />
 
     <ImageButton
-        android:id="@+id/btn_cancel"
+        android:id="@+id/btn_delete_basket"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:background="@null"
+        android:clickable="true"
+        android:focusable="true"
         android:contentDescription="@string/cancel"
         android:src="@drawable/ic_trash_big"
         app:layout_constraintBottom_toBottomOf="@id/layout_toolbar"
@@ -57,6 +59,7 @@
                 android:background="@drawable/bg_button_basket"
                 android:text="@string/basket_button_text"
                 android:textStyle="bold"
+                android:foreground="?attr/selectableItemBackground"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/ll_total_price"
                 app:layout_constraintStart_toStartOf="parent"

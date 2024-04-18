@@ -18,6 +18,7 @@
     <string name="suggested_product">Önerilen Ürünler</string>
 
     <style name="product_name">Product Name</style>
+    <string name="generic_error">Some error occurred, try again.</string>
 
     <style name="attribute">Attribute</style>
 </resources>
