@@ -7,4 +7,5 @@ sealed class TopLevelException(message: String) : Exception(message) {
     class HttpException(code: Int) : TopLevelException("HTTP exception: $code")
     class ProductNotFoundException : TopLevelException("Product not found")
     class CurrentOrderNotFound : TopLevelException("Current order not found")
+    class GenericOperationFail: TopLevelException("We can't handle your operation, please try again.")
 }
