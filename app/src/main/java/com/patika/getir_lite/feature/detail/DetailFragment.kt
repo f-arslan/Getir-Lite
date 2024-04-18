@@ -1,13 +1,17 @@
 package com.patika.getir_lite.feature.detail
 
+import android.os.Bundle
+import android.transition.TransitionInflater
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import coil.load
 import com.patika.getir_lite.ProductViewModel
+import com.patika.getir_lite.R
 import com.patika.getir_lite.databinding.FragmentDetailBinding
 import com.patika.getir_lite.feature.BaseFragment
 import com.patika.getir_lite.model.BaseResponse
@@ -30,6 +34,12 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
         container: ViewGroup?
     ): FragmentDetailBinding = FragmentDetailBinding.inflate(inflater, container, false)
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val inflater = TransitionInflater.from(requireContext())
+        enterTransition = inflater.inflateTransition(R.transition.fade)
+    }
+
     override fun FragmentDetailBinding.onMain() {
         val productId = args.productId
         viewModel.initializeProduct(productId)
@@ -38,6 +48,30 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
         updateProductAction()
         listenActionClickListeners(productId)
         listenBasket()
+        basketClickOperation()
+        listenCancelClick()
+    }
+
+    private fun FragmentDetailBinding.listenCancelClick() {
+        btnCancel.setOnClickListener {
+            if (isAdded) {
+                findNavController().popBackStack()
+            }
+        }
+    }
+
+    private fun FragmentDetailBinding.basketClickOperation() = with(layoutTotalPriceCard) {
+        cvTotalPrice.setOnClickListener {
+            navigateToBasket()
+        }
+    }
+
+    private fun navigateToBasket() {
+        if (isAdded) {
+            findNavController().navigate(
+                DetailFragmentDirections.actionDetailFragmentToBasketFragment()
+            )
+        }
     }
 
     private fun FragmentDetailBinding.listenActionClickListeners(productId: Long) =
