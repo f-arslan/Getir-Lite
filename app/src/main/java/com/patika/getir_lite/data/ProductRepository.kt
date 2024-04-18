@@ -16,4 +16,5 @@ interface ProductRepository {
     fun getBasketWithProductsAsFlow(): Flow<BasketWithProducts?>
     fun getProductAsFlow(productId: Long): Flow<Product?>
     suspend fun updateItemCount(productId: Long, count: Int)
+    suspend fun clearBasket(): Boolean
 }

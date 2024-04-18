@@ -119,6 +119,15 @@ class ProductDataSource @Inject constructor(
     override suspend fun updateItemCount(productId: Long, count: Int) {
         productDao.updateItem(productId, count)
     }
+
+    override suspend fun clearBasket(): Boolean = try {
+        withContext(ioDispatcher) {
+            productDao.cancelOrder()
+            true
+        }
+    } catch (e: Exception) {
+        false
+    }
 }
 
 enum class DataSyncResult {

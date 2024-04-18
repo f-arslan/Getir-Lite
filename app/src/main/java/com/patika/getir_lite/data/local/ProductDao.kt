@@ -50,6 +50,12 @@ interface ProductDao {
     @Query("UPDATE orders SET totalPrice = totalPrice + :price WHERE id = :orderId")
     suspend fun updateActiveOrderPrice(orderId: Long, price: Double)
 
+    @Query("UPDATE items SET orderId = -1, count = 0 WHERE orderId = :orderId")
+    suspend fun clearBasket(orderId: Long)
+
+    @Query("UPDATE orders SET totalPrice = 0, orderStatus = :status WHERE id = :orderId")
+    suspend fun finishOrder(orderId: Long, status: OrderStatus = OrderStatus.FINISHED)
+
     @Transaction
     suspend fun updateItem(productId: Long, count: Int) {
         val product = getProductById(productId)
@@ -74,6 +80,13 @@ interface ProductDao {
         if (count + product.count == 0) {
             updateItemCountOrder(productId = productId, count = 0, orderId = -1)
         }
+    }
+
+    @Transaction
+    suspend fun cancelOrder() {
+        val order = getActiveOrder(OrderStatus.ON_BASKET) ?: return
+        clearBasket(order.id)
+        finishOrder(order.id)
     }
 
     @Transaction
