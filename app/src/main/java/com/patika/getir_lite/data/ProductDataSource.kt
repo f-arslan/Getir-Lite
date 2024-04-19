@@ -12,21 +12,20 @@ import com.patika.getir_lite.data.remote.model.SuggestedProductDto
 import com.patika.getir_lite.data.remote.model.toDomainModel
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.model.BasketWithProducts
+import com.patika.getir_lite.model.CountType
+import com.patika.getir_lite.model.CountType.*
 import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.model.ProductType
 import com.patika.getir_lite.model.toItemEntity
 import com.patika.getir_lite.util.TopLevelException
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -116,8 +115,14 @@ class ProductDataSource @Inject constructor(
         productDao.insertItems(products.map(Product::toItemEntity))
     }
 
-    override suspend fun updateItemCount(productId: Long, count: Int) {
-        productDao.updateItem(productId, count)
+    override suspend fun updateItemCount(productId: Long, countType: CountType) {
+        productDao.updateItem(
+            productId = productId,
+            count = when (countType) {
+                PLUS_ONE -> 1
+                MINUS_ONE -> -1
+            }
+        )
     }
 
     override suspend fun clearBasket(): Boolean = try {

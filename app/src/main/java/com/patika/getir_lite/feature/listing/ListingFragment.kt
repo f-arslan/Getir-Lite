@@ -16,7 +16,7 @@ import com.patika.getir_lite.feature.adapter.ProductAdapter
 import com.patika.getir_lite.feature.adapter.ProductListAdapter
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.util.decor.GridSpacingItemDecoration
-import com.patika.getir_lite.util.ext.formatPrice
+import com.patika.getir_lite.util.ext.animateBasketVisibility
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -42,16 +42,6 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         onBasketClick()
     }
 
-    private fun FragmentListingBinding.onBasketClick() {
-        cvTotalPrice.setOnClickListener {
-            if (isAdded) {
-                findNavController().navigate(
-                    ListingFragmentDirections.actionListingFragmentToBasketFragment()
-                )
-            }
-        }
-    }
-
     private fun FragmentListingBinding.setupRecycleViewsAndAdapter() {
         suggestedProductListAdapter = ProductListAdapter(
             events = productViewModel::onEvent,
@@ -75,6 +65,18 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         rvProduct.addItemDecoration(GridSpacingItemDecoration())
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int = if (position == 0) SPAN_COUNT else 1
+        }
+    }
+
+    override fun safeOnCreateView() {
+        scopeWithLifecycle {
+            val basket = productViewModel.basket.first()
+            if (basket is BaseResponse.Success) {
+                val price = basket.data?.totalPrice ?: BigDecimal.ZERO
+                if (price > BigDecimal.ZERO) {
+                    binding.layoutTotalPriceCard.cvTotalPrice.visibility = View.VISIBLE
+                }
+            }
         }
     }
 
@@ -117,19 +119,20 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
             }
         }
 
+
         scopeWithLifecycle {
-            basket.collectLatest { response ->
-                when (response) {
-                    is BaseResponse.Error -> cvTotalPrice.visibility = View.GONE
+            with(layoutTotalPriceCard) {
+                basket.collectLatest { response ->
+                    when (response) {
+                        is BaseResponse.Error -> cvTotalPrice.visibility = View.GONE
 
-                    BaseResponse.Loading -> cvTotalPrice.visibility = View.GONE
+                        BaseResponse.Loading -> cvTotalPrice.visibility = View.GONE
 
-                    is BaseResponse.Success -> response.data?.totalPrice?.let {
-                        tvTotalPrice.text = it.formatPrice()
-                        cvTotalPrice.visibility =
-                            if (it > BigDecimal.ZERO) View.VISIBLE else View.GONE
-                    } ?: run {
-                        cvTotalPrice.visibility = View.GONE
+                        is BaseResponse.Success -> response.data?.totalPrice?.let {
+                            cvTotalPrice.animateBasketVisibility(it, requireContext(), tvTotalPrice)
+                        } ?: run {
+                            cvTotalPrice.visibility = View.GONE
+                        }
                     }
                 }
             }
@@ -160,6 +163,16 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
                 if (response is BaseResponse.Success) {
                     suggestedProductListAdapter.saveData(response.data)
                 }
+            }
+        }
+    }
+
+    private fun FragmentListingBinding.onBasketClick() {
+        layoutTotalPriceCard.cvTotalPrice.setOnClickListener {
+            if (isAdded) {
+                findNavController().navigate(
+                    ListingFragmentDirections.actionListingFragmentToBasketFragment()
+                )
             }
         }
     }

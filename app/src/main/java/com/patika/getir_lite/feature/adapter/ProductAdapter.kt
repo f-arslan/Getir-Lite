@@ -23,7 +23,7 @@ import com.patika.getir_lite.util.ext.toItemActionType
 class ProductAdapter<B : ViewBinding>(
     private val bindingInflater: (inflater: LayoutInflater, parent: ViewGroup, attachToParent: Boolean) -> B,
     private val events: (ProductEvent) -> Unit,
-    private val onProductClick: (productId: Long) -> Unit = {}
+    private val onProductClick: (productId: Long) -> Unit
 ) : ListAdapter<Product, ProductAdapter.ProductViewHolder<B>>(ItemDiff) {
 
     private val asyncListDiffer = AsyncListDiffer(this, ItemDiff)
@@ -86,6 +86,9 @@ class ProductAdapter<B : ViewBinding>(
                 crossfade(true)
             }
             itemActionView.handleActionOperations(product.entityId)
+            binding.root.setOnClickListener {
+                onProductClick(product.entityId)
+            }
             bindCount(product.count)
         }
 
@@ -138,6 +141,7 @@ class ProductAdapter<B : ViewBinding>(
                 )
             )
     }
+
     fun saveData(product: List<Product>) {
         asyncListDiffer.submitList(product)
     }

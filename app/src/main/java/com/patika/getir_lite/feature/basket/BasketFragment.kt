@@ -1,16 +1,9 @@
 package com.patika.getir_lite.feature.basket
 
-import android.app.Dialog
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.StrikethroughSpan
-import android.transition.TransitionInflater
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.Window
-import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -30,7 +23,10 @@ import com.patika.getir_lite.util.decor.DividerDecoration
 import com.patika.getir_lite.util.ext.formatPrice
 import com.patika.getir_lite.util.ext.makeSnackbar
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
+import com.patika.getir_lite.util.ext.showCancelDialog
+import com.patika.getir_lite.util.ext.showCompleteDialog
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
@@ -46,42 +42,35 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
         container: ViewGroup?
     ): FragmentBasketBinding = FragmentBasketBinding.inflate(inflater, container, false)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val inflater = TransitionInflater.from(requireContext())
-        enterTransition = inflater.inflateTransition(R.transition.fade)
-    }
-
     override fun FragmentBasketBinding.onMain() {
         setupTextView()
         setupRecycleViewAndAdapters()
         listenBasketWithProducts()
         listenSuggestedProducts()
         listenDeleteBasketClick()
-        listenNavigationState()
+        listenUiStateChanges()
         listenOnCancelClick()
         finishOrderClick()
     }
 
     private fun FragmentBasketBinding.finishOrderClick() {
-        // TODO: Create a custom dialog for completion, look to original design
-        btnCompleteBasket.setOnClickListener { showCancelDialog() }
+        btnCompleteBasket.setOnClickListener {
+            viewModel.onFinishOrderClick()
+        }
     }
 
-    private fun FragmentBasketBinding.listenNavigationState() = scopeWithLifecycle {
+    private fun FragmentBasketBinding.listenUiStateChanges() = scopeWithLifecycle {
         fun performNavigation(action: () -> Unit) {
             action()
-            viewModel.resetNavigation()
+            viewModel.resetUiState()
         }
 
-        viewModel.navigationState.collectLatest { navigation ->
-            when (navigation) {
-                BasketNavigation.NavigateToListing -> performNavigation(::navigateToListing)
-                is BasketNavigation.Error -> {
-                    makeSnackbar(navigation.exception.message)
-                }
-
-                BasketNavigation.None -> Unit
+        viewModel.basketUiState.collectLatest { state ->
+            when (state) {
+                BasketUiState.Cleaned -> performNavigation(::navigateToListing)
+                BasketUiState.Completed -> showCompleteDialog { performNavigation(::navigateToListing) }
+                is BasketUiState.Error -> makeSnackbar(state.exception.message)
+                BasketUiState.Idle -> Unit
             }
         }
     }
@@ -95,14 +84,16 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
     }
 
     private fun FragmentBasketBinding.listenDeleteBasketClick() {
-        btnDeleteBasket.setOnClickListener { showCancelDialog() }
+        btnDeleteBasket.setOnClickListener { showCancelDialog(viewModel::onClearBasketClick) }
     }
 
     private fun FragmentBasketBinding.setupRecycleViewAndAdapters() {
         basketProductAdapter = ProductAdapter(
             bindingInflater = ItemBasketBinding::inflate,
             events = productViewModel::onEvent,
+            onProductClick = ::navigateToDetailFragment
         )
+
         val divider = ContextCompat.getDrawable(requireContext(), R.drawable.divider)
         val margin = resources.getDimensionPixelSize(R.dimen.margin_8)
         divider?.let {
@@ -148,7 +139,7 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
         }
     }
 
-    private fun FragmentBasketBinding.listenBasketWithProducts() = with(viewModel) {
+    private fun FragmentBasketBinding.listenBasketWithProducts() = with(productViewModel) {
         scopeWithLifecycle {
             basketWithProducts.collectLatest { response ->
                 when (response) {
@@ -161,6 +152,9 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
                             setSpan(StrikethroughSpan(), 0, price.length, 0)
                             tvOldPrice.text = this
                         }
+                        if (data.order.totalPrice.toDouble() == 0.0) {
+                            navigateToListingWithAnimDelay()
+                        }
                     }
 
                     else -> Unit
@@ -169,26 +163,17 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
         }
     }
 
-    private fun showCancelDialog() {
-        val dialog = Dialog(requireContext())
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setCancelable(false)
-        dialog.setContentView(R.layout.dialog_basket_delete)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-        val noButton: Button = dialog.findViewById(R.id.btn_no)
-        val yesButton: Button = dialog.findViewById(R.id.btn_yes)
-
-        noButton.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        yesButton.setOnClickListener {
-            viewModel.clearBasket()
-            dialog.dismiss()
-        }
-
-        dialog.show()
+    private fun navigateToListingWithAnimDelay() = scopeWithLifecycle {
+        val maxAnimDuration = binding.rvBasket.itemAnimator?.let {
+            listOf(
+                it.addDuration,
+                it.removeDuration,
+                it.moveDuration,
+                it.changeDuration
+            ).maxOrNull() ?: 0L
+        } ?: 0L
+        delay(maxAnimDuration + 150L)
+        navigateToListing()
     }
 
     private fun FragmentBasketBinding.setupTextView() {

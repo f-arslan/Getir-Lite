@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/getir_background"
     tools:context=".feature.basket.BasketFragment">
 
     <include
@@ -14,11 +15,13 @@
         android:id="@+id/btn_delete_basket"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="8dp"
         android:background="@null"
         android:clickable="true"
-        android:focusable="true"
         android:contentDescription="@string/cancel"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        android:padding="8dp"
         android:src="@drawable/ic_trash_big"
         app:layout_constraintBottom_toBottomOf="@id/layout_toolbar"
         app:layout_constraintEnd_toEndOf="parent"
@@ -32,8 +35,8 @@
         android:orientation="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        app:layout_constraintTop_toBottomOf="@id/layout_toolbar"
         app:layout_constraintBottom_toTopOf="@id/frameLayout"
+        app:layout_constraintTop_toBottomOf="@id/layout_toolbar"
         tools:itemCount="3"
         tools:listitem="@layout/item_basket" />
 
@@ -57,9 +60,9 @@
                 android:layout_height="50dp"
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/bg_button_basket"
+                android:foreground="?attr/selectableItemBackground"
                 android:text="@string/basket_button_text"
                 android:textStyle="bold"
-                android:foreground="?attr/selectableItemBackground"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/ll_total_price"
                 app:layout_constraintStart_toStartOf="parent"

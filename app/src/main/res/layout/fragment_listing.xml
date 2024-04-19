@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/getir_background"
     tools:context=".feature.listing.ListingFragment">
 
     <Toolbar
@@ -27,51 +28,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cv_total_price"
+    <include
+        android:id="@+id/layout_total_price_card"
+        layout="@layout/total_price_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:foreground="?attr/selectableItemBackground"
-        app:cardCornerRadius="8dp"
-        app:layout_constraintBottom_toBottomOf="@id/toolbar"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:strokeWidth="0dp">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/btn_shopping"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?attr/colorSurface"
-                android:contentDescription="@string/add_item"
-                android:padding="4dp"
-                android:src="@drawable/ic_bag" />
-
-            <TextView
-                android:id="@+id/tv_total_price"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="?attr/colorTertiary"
-                android:gravity="center"
-                android:maxLines="1"
-                android:paddingHorizontal="8dp"
-                android:text="@string/_0_00"
-                android:textColor="?attr/colorPrimary"
-                android:textStyle="bold"
-                tools:text="₺200,00" />
-
-        </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
+        app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
     <FrameLayout
         android:id="@+id/cl_product"

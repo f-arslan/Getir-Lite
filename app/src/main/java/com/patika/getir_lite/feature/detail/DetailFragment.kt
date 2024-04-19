@@ -1,7 +1,5 @@
 package com.patika.getir_lite.feature.detail
 
-import android.os.Bundle
-import android.transition.TransitionInflater
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,16 +9,15 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import coil.load
 import com.patika.getir_lite.ProductViewModel
-import com.patika.getir_lite.R
 import com.patika.getir_lite.databinding.FragmentDetailBinding
 import com.patika.getir_lite.feature.BaseFragment
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.model.ProductEvent
+import com.patika.getir_lite.util.ext.animateBasketVisibility
 import com.patika.getir_lite.util.ext.formatPrice
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
-import java.math.BigDecimal
 
 @AndroidEntryPoint
 class DetailFragment : BaseFragment<FragmentDetailBinding>() {
@@ -34,12 +31,6 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
         container: ViewGroup?
     ): FragmentDetailBinding = FragmentDetailBinding.inflate(inflater, container, false)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val inflater = TransitionInflater.from(requireContext())
-        enterTransition = inflater.inflateTransition(R.transition.fade)
-    }
-
     override fun FragmentDetailBinding.onMain() {
         val productId = args.productId
         viewModel.initializeProduct(productId)
@@ -50,28 +41,6 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
         listenBasket()
         basketClickOperation()
         listenCancelClick()
-    }
-
-    private fun FragmentDetailBinding.listenCancelClick() {
-        btnCancel.setOnClickListener {
-            if (isAdded) {
-                findNavController().popBackStack()
-            }
-        }
-    }
-
-    private fun FragmentDetailBinding.basketClickOperation() = with(layoutTotalPriceCard) {
-        cvTotalPrice.setOnClickListener {
-            navigateToBasket()
-        }
-    }
-
-    private fun navigateToBasket() {
-        if (isAdded) {
-            findNavController().navigate(
-                DetailFragmentDirections.actionDetailFragmentToBasketFragment()
-            )
-        }
     }
 
     private fun FragmentDetailBinding.listenActionClickListeners(productId: Long) =
@@ -121,27 +90,43 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
         }
     }
 
-    private fun FragmentDetailBinding.listenBasket() = with(productViewModel) {
-        scopeWithLifecycle {
-            basket.collectLatest { response ->
-                with(layoutTotalPriceCard) {
-                    when (response) {
-                        is BaseResponse.Error -> cvTotalPrice.visibility = View.GONE
+    private fun FragmentDetailBinding.listenBasket() = scopeWithLifecycle {
+        productViewModel.basket.collectLatest { response ->
+            with(layoutTotalPriceCard) {
+                when (response) {
+                    is BaseResponse.Error -> cvTotalPrice.visibility = View.GONE
 
-                        BaseResponse.Loading -> cvTotalPrice.visibility = View.GONE
+                    BaseResponse.Loading -> cvTotalPrice.visibility = View.GONE
 
-                        is BaseResponse.Success -> {
-                            response.data?.totalPrice?.let {
-                                tvTotalPrice.text = it.formatPrice()
-                                cvTotalPrice.visibility =
-                                    if (it > BigDecimal.ZERO) View.VISIBLE else View.GONE
-                            } ?: run {
-                                cvTotalPrice.visibility = View.GONE
-                            }
+                    is BaseResponse.Success -> {
+                        response.data?.totalPrice?.let {
+                            cvTotalPrice.animateBasketVisibility(it, requireContext(), tvTotalPrice)
+                        } ?: run {
+                            cvTotalPrice.visibility = View.GONE
                         }
                     }
                 }
             }
+        }
+    }
+
+    private fun FragmentDetailBinding.listenCancelClick() {
+        btnCancel.setOnClickListener {
+            if (isAdded) {
+                findNavController().popBackStack()
+            }
+        }
+    }
+
+    private fun FragmentDetailBinding.basketClickOperation() = with(layoutTotalPriceCard) {
+        cvTotalPrice.setOnClickListener {
+            navigateToBasket()
+        }
+    }
+
+    private fun navigateToBasket() {
+        if (isAdded) {
+            findNavController().navigate(DetailFragmentDirections.actionDetailFragmentToBasketFragment())
         }
     }
 }

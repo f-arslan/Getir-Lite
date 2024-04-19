@@ -2,6 +2,7 @@ package com.patika.getir_lite.data
 
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.model.BasketWithProducts
+import com.patika.getir_lite.model.CountType
 import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.Product
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +16,6 @@ interface ProductRepository {
     fun getBasketAsFlow(): Flow<Order?>
     fun getBasketWithProductsAsFlow(): Flow<BasketWithProducts?>
     fun getProductAsFlow(productId: Long): Flow<Product?>
-    suspend fun updateItemCount(productId: Long, count: Int)
+    suspend fun updateItemCount(productId: Long, countType: CountType)
     suspend fun clearBasket(): Boolean
 }

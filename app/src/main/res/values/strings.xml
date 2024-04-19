@@ -16,9 +16,11 @@
     <string name="no">Hayır</string>
     <string name="yes">Evet</string>
     <string name="suggested_product">Önerilen Ürünler</string>
-
+    <string name="complete_dialog">Siparişinizi verdiniz 🙂 Sosyal teması azaltmak için siparişinizi kapınıza bırakacağız.</string>
+    <string name="complete">Tamam</string>
     <style name="product_name">Product Name</style>
     <string name="generic_error">Some error occurred, try again.</string>
+    <string name="image">Image</string>
 
     <style name="attribute">Attribute</style>
 </resources>

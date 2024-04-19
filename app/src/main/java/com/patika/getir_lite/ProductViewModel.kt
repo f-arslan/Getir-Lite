@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.patika.getir_lite.data.ProductRepository
 import com.patika.getir_lite.model.BaseResponse
+import com.patika.getir_lite.model.BasketWithProducts
+import com.patika.getir_lite.model.CountType
 import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.model.ProductEvent
@@ -69,6 +71,23 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
             initialValue = BaseResponse.Loading
         )
 
+    val basketWithProducts: Flow<BaseResponse<BasketWithProducts>> = productRepository
+        .getBasketWithProductsAsFlow()
+        .transform {
+            when (it) {
+                null -> emit(BaseResponse.Loading)
+                else -> emit(BaseResponse.Success(it))
+            }
+        }
+        .catch { error ->
+            emit(BaseResponse.Error(TopLevelException.GenericException(error.message)))
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = BaseResponse.Loading
+        )
+
     @MainThread
     fun initializeProductData() = viewModelScope.launch {
         productRepository.syncWithRemote()
@@ -79,15 +98,15 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
         viewModelScope.launch {
             when (event) {
                 is ProductEvent.OnDeleteClick -> {
-                    productRepository.updateItemCount(event.entityId, -1)
+                    productRepository.updateItemCount(event.entityId, CountType.MINUS_ONE)
                 }
 
                 is ProductEvent.OnMinusClick -> {
-                    productRepository.updateItemCount(event.entityId, -1)
+                    productRepository.updateItemCount(event.entityId, CountType.MINUS_ONE)
                 }
 
                 is ProductEvent.OnPlusClick -> {
-                    productRepository.updateItemCount(event.entityId, 1)
+                    productRepository.updateItemCount(event.entityId, CountType.PLUS_ONE)
                 }
             }
         }

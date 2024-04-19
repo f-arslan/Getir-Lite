@@ -17,6 +17,7 @@ abstract class BaseFragment<T : ViewBinding> : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = inflateBinding(inflater, container)
+        safeOnCreateView()
         return binding.root
     }
 
@@ -28,6 +29,10 @@ abstract class BaseFragment<T : ViewBinding> : Fragment() {
     protected abstract fun inflateBinding(inflater: LayoutInflater, container: ViewGroup?): T
 
     protected abstract fun T.onMain()
+
+    protected open fun safeOnCreateView() {
+
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
