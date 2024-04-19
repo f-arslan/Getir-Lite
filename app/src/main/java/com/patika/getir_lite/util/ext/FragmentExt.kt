@@ -1,8 +1,14 @@
 package com.patika.getir_lite.util.ext
 
+import android.app.Dialog
+import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.view.ViewGroup
+import android.view.Window
+import android.widget.Button
 import android.widget.TextView
+import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -40,4 +46,50 @@ fun ViewBinding.makeSnackbar(text: String?) {
     )
     snackbarView.layoutParams = params
     snackbar.show()
+}
+
+fun Fragment.showCustomDialog(
+    @LayoutRes layoutRes: Int,
+    buttonSetup: Dialog.() -> Unit
+) {
+    val dialog = Dialog(requireContext())
+    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+    dialog.setCancelable(false)
+    dialog.setContentView(layoutRes)
+    dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+    dialog.window?.setLayout(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.WRAP_CONTENT
+    )
+
+    dialog.buttonSetup()
+
+    dialog.show()
+}
+
+fun Fragment.showCancelDialog(onYesClick: () -> Unit) {
+    showCustomDialog(R.layout.dialog_basket_delete) {
+        val noButton: Button = findViewById(R.id.btn_no)
+        val yesButton: Button = findViewById(R.id.btn_yes)
+
+        noButton.setOnClickListener {
+            dismiss()
+        }
+
+        yesButton.setOnClickListener {
+            onYesClick()
+            dismiss()
+        }
+    }
+}
+
+fun Fragment.showCompleteDialog(onComplete: () -> Unit) {
+    showCustomDialog(R.layout.dialog_complete_order) {
+        val completeButton: Button = findViewById(R.id.btn_complete)
+
+        completeButton.setOnClickListener {
+            onComplete()
+            dismiss()
+        }
+    }
 }
