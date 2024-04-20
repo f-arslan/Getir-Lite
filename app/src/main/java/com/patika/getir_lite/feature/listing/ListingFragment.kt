@@ -1,5 +1,7 @@
 package com.patika.getir_lite.feature.listing
 
+import android.content.res.Configuration
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,6 +41,7 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
     override fun FragmentListingBinding.onMain() {
         setupRecycleViewsAndAdapter()
         observeRemoteChanges()
+        observeBasketButton()
         onBasketClick()
     }
 
@@ -54,7 +57,9 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
             onProductClick = ::navigateToDetailFragment
         )
 
-        val layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val spanCount = if (isLandscape) SPAN_COUNT * 2 else SPAN_COUNT
+        val layoutManager = GridLayoutManager(requireContext(), spanCount)
         val concatAdapter = ConcatAdapter(
             suggestedProductListAdapter,
             productAdapter
@@ -62,9 +67,9 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
         rvProduct.layoutManager = layoutManager
         rvProduct.adapter = concatAdapter
-        rvProduct.addItemDecoration(GridSpacingItemDecoration())
+        rvProduct.addItemDecoration(GridSpacingItemDecoration(spanCount))
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int = if (position == 0) SPAN_COUNT else 1
+            override fun getSpanSize(position: Int): Int = if (position == 0) spanCount else 1
         }
     }
 
@@ -118,8 +123,9 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
                 }
             }
         }
+    }
 
-
+    private fun FragmentListingBinding.observeBasketButton() = with(productViewModel) {
         scopeWithLifecycle {
             with(layoutTotalPriceCard) {
                 basket.collectLatest { response ->

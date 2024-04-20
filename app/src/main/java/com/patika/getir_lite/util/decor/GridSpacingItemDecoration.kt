@@ -5,7 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.patika.getir_lite.R
 
-class GridSpacingItemDecoration : RecyclerView.ItemDecoration() {
+class GridSpacingItemDecoration(private val spanCount: Int) : RecyclerView.ItemDecoration() {
     override fun getItemOffsets(
         outRect: Rect,
         view: View,
@@ -15,7 +15,7 @@ class GridSpacingItemDecoration : RecyclerView.ItemDecoration() {
         val resources = view.context.resources
         val spacing = resources.getDimensionPixelSize(R.dimen.margin_16)
         val position = parent.getChildAdapterPosition(view)
-        val columnSize = 3
+        val columnSize = spanCount
         if (position > 0) {
             if (position % columnSize == 1) {
                 outRect.left = spacing
@@ -26,7 +26,7 @@ class GridSpacingItemDecoration : RecyclerView.ItemDecoration() {
                 outRect.right = spacing / 2
             }
         }
-        if (position > 3) {
+        if (position > spanCount) {
             outRect.top = -spacing
         }
     }
