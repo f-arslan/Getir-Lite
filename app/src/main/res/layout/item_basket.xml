@@ -18,7 +18,7 @@
         app:strokeColor="?attr/colorOutline"
         app:strokeWidth="1dp">
 
-        <com.patika.getir_lite.ui.ProductImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_item"
             android:layout_width="@dimen/basket_card_size"
             android:layout_height="@dimen/basket_card_size"
@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="2"
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnSurface"
             android:textFontWeight="600"
             android:textSize="12sp"
             tools:text="Product Name" />

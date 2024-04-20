@@ -12,7 +12,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.patika.getir_lite.ui.ProductImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_item"
             android:layout_width="@dimen/suggested_product_image_size"
             android:layout_height="@dimen/suggested_product_image_size"

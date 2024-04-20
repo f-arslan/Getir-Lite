@@ -7,7 +7,6 @@
     android:paddingTop="6dp"
     android:paddingBottom="16dp">
 
-
     <View
         android:id="@+id/view_placeholder"
         android:layout_width="wrap_content"
@@ -17,22 +16,34 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/item_card"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/suggested_product_image_size"
+        android:layout_height="@dimen/suggested_product_image_size"
         android:layout_marginTop="8dp"
-        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="@android:color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/view_placeholder"
-        app:strokeColor="?attr/colorTertiary"
-        app:strokeWidth="1dp">
+        app:strokeWidth="0dp">
 
-        <com.patika.getir_lite.ui.ProductImageView
-            android:id="@+id/iv_item"
-            android:layout_width="@dimen/suggested_product_image_size"
-            android:layout_height="@dimen/suggested_product_image_size"
-            android:contentDescription="@string/food_image"
-            android:scaleType="centerCrop"
-            tools:background="@drawable/food" />
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:cardElevation="0dp">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_item"
+                android:layout_width="92dp"
+                android:layout_height="92dp"
+                android:contentDescription="@string/food_image"
+                android:scaleType="centerCrop"
+                tools:background="@drawable/food" />
+
+        </androidx.cardview.widget.CardView>
+
+        <com.patika.getir_lite.ui.BorderView
+            android:id="@+id/view_card_border"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
     </com.google.android.material.card.MaterialCardView>
 
