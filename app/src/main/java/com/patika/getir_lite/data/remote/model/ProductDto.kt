@@ -16,7 +16,7 @@ data class ProductDto(
 )
 
 fun ProductDto.toDomainModel(): Product {
-    val attribute = attribute ?: shortDescription ?: "No description available"
+    val attribute = attribute ?: shortDescription ?: ""
     return Product(
         id = id,
         name = name.trim(),

@@ -99,6 +99,7 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
         divider?.let {
             rvBasket.addItemDecoration(DividerDecoration(divider, margin))
         }
+        rvBasket.itemAnimator = null
 
         val headerAdapter = HeaderAdapter(getString(R.string.suggested_product))
         productListAdapter = ProductListAdapter(

@@ -8,10 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.fragment.app.add
-import androidx.fragment.app.commit
-import com.patika.getir_lite.feature.detail.DetailFragment
-import com.patika.getir_lite.feature.listing.ListingFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -20,8 +16,8 @@ class MainActivity : AppCompatActivity() {
     private val productViewModel: ProductViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
         productViewModel.initializeProductData()
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.light(
@@ -31,8 +27,6 @@ class MainActivity : AppCompatActivity() {
         )
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars =
             false
-
-        setContentView(R.layout.activity_main)
 
         handleInsets()
     }

@@ -20,7 +20,7 @@ data class SuggestedProductDto(
 
 fun SuggestedProductDto.toDomainModel(): Product {
     val imageURL = imageURL ?: squareThumbnailURL
-    val attribute = shortDescription ?: "No description available."
+    val attribute = shortDescription ?: ""
     return Product(
         id = id,
         price = price.toBigDecimal(),

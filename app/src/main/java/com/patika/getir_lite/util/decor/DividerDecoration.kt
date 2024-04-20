@@ -11,7 +11,7 @@ class DividerDecoration(private val divider: Drawable, private val margin: Int) 
         val right = parent.width - parent.paddingRight - margin
 
         val childCount = parent.childCount
-        for (i in 0 until childCount) {
+        for (i in 0 until childCount - 1) {
             val child = parent.getChildAt(i)
 
             // Skip drawing for children in transition

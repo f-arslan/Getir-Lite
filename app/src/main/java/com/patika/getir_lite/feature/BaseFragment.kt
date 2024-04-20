@@ -30,9 +30,7 @@ abstract class BaseFragment<T : ViewBinding> : Fragment() {
 
     protected abstract fun T.onMain()
 
-    protected open fun safeOnCreateView() {
-
-    }
+    protected open fun safeOnCreateView() = Unit
 
     override fun onDestroyView() {
         super.onDestroyView()
