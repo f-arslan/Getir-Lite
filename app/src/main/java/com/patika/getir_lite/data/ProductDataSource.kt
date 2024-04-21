@@ -1,23 +1,25 @@
 package com.patika.getir_lite.data
 
+import android.util.Log
 import com.patika.getir_lite.data.di.AppDispatchers.IO
 import com.patika.getir_lite.data.di.Dispatcher
 import com.patika.getir_lite.data.local.ProductDao
 import com.patika.getir_lite.data.local.model.OrderEntity
 import com.patika.getir_lite.data.local.model.OrderStatus
+import com.patika.getir_lite.data.local.model.ProductEntity
 import com.patika.getir_lite.data.local.model.toDomainModel
 import com.patika.getir_lite.data.remote.RemoteRepository
 import com.patika.getir_lite.data.remote.model.ProductDto
 import com.patika.getir_lite.data.remote.model.SuggestedProductDto
-import com.patika.getir_lite.data.remote.model.toDomainModel
+import com.patika.getir_lite.data.remote.model.toProductEntity
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.model.BasketWithProducts
 import com.patika.getir_lite.model.CountType
-import com.patika.getir_lite.model.CountType.*
+import com.patika.getir_lite.model.CountType.MINUS_ONE
+import com.patika.getir_lite.model.CountType.PLUS_ONE
 import com.patika.getir_lite.model.Order
-import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.model.ProductType
-import com.patika.getir_lite.model.toItemEntity
+import com.patika.getir_lite.model.ProductWithCount
 import com.patika.getir_lite.util.TopLevelException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -38,14 +40,11 @@ class ProductDataSource @Inject constructor(
     private val _dataSyncResult = MutableStateFlow(listOf(DataSyncResult.IDLE))
     override val dataSyncResult = _dataSyncResult.asStateFlow()
 
-    override fun getProductsAsFlow(): Flow<List<Product>> =
-        productDao.getAllItemsByType(ProductType.PRODUCT)
-            .map { productEntities -> productEntities.map { it.toDomainModel() } }
+    override fun getProductsAsFlow(): Flow<List<ProductWithCount>> =
+        productDao.getProductsWithCounts(ProductType.PRODUCT)
 
-
-    override fun getSuggestedProductsAsFlow(): Flow<List<Product>> =
-        productDao.getAllItemsByType(ProductType.SUGGESTED_PRODUCT)
-            .map { productEntities -> productEntities.map { it.toDomainModel() } }
+    override fun getSuggestedProductsAsFlow(): Flow<List<ProductWithCount>> =
+        productDao.getProductsWithCounts(ProductType.SUGGESTED_PRODUCT)
 
     override suspend fun syncWithRemote(): BaseResponse<Unit> {
         return try {
@@ -81,16 +80,16 @@ class ProductDataSource @Inject constructor(
     override fun getBasketAsFlow(): Flow<Order?> =
         productDao.getActiveOrderAsFlow(OrderStatus.ON_BASKET).map { it?.toDomainModel() }
 
-    override fun getProductAsFlow(productId: Long): Flow<Product?> =
-        productDao.getProductByIdAsFlow(productId).map { it?.toDomainModel() }
+    override fun getProductAsFlow(productId: Long): Flow<ProductWithCount?> =
+        productDao.getProductWithCount(productId)
 
     override fun getBasketWithProductsAsFlow(): Flow<BasketWithProducts?> =
         productDao.getBasketWithProducts(OrderStatus.ON_BASKET)
 
-    private suspend fun getProducts(): BaseResponse<List<Product>> =
+    private suspend fun getProducts(): BaseResponse<List<ProductEntity>> =
         when (val response = remoteRepository.getProductDtos()) {
             is BaseResponse.Success -> {
-                val products = response.data.map(ProductDto::toDomainModel)
+                val products = response.data.map(ProductDto::toProductEntity)
 
                 BaseResponse.Success(products)
             }
@@ -99,10 +98,10 @@ class ProductDataSource @Inject constructor(
             BaseResponse.Loading -> BaseResponse.Loading
         }
 
-    private suspend fun getSuggestedProducts(): BaseResponse<List<Product>> =
+    private suspend fun getSuggestedProducts(): BaseResponse<List<ProductEntity>> =
         when (val response = remoteRepository.getSuggestedProductDtos()) {
             is BaseResponse.Success -> {
-                val products = response.data.map(SuggestedProductDto::toDomainModel)
+                val products = response.data.map(SuggestedProductDto::toProductEntity)
 
                 BaseResponse.Success(products)
             }
@@ -111,18 +110,29 @@ class ProductDataSource @Inject constructor(
             BaseResponse.Loading -> BaseResponse.Loading
         }
 
-    private suspend fun saveDataToLocalFirstTime(products: List<Product>) {
-        productDao.insertItems(products.map(Product::toItemEntity))
+    private suspend fun saveDataToLocalFirstTime(products: List<ProductEntity>) {
+        productDao.insertProducts(products)
     }
 
-    override suspend fun updateItemCount(productId: Long, countType: CountType) {
-        productDao.updateItem(
-            productId = productId,
-            count = when (countType) {
-                PLUS_ONE -> 1
-                MINUS_ONE -> -1
+    override suspend fun updateItemCount(productId: Long, countType: CountType) = try {
+        withContext(ioDispatcher) {
+            val getActiveOrder = productDao.getActiveOrder(OrderStatus.ON_BASKET)
+            val productPrice = productDao.getProductById(productId).price
+            val orderId = getActiveOrder?.id ?: run {
+                val id = productDao.insertOrder(
+                    OrderEntity(orderStatus = OrderStatus.ON_BASKET)
+                )
+                id
             }
-        )
+
+            when (countType) {
+                PLUS_ONE -> productDao.addItemToBasket(productId, orderId, productPrice)
+                MINUS_ONE -> productDao.decrementItemCount(productId, orderId, productPrice)
+            }
+        }
+    } catch (e: Exception) {
+        Log.e("ProductDataSource", "updateItemCount: $e")
+        Unit
     }
 
     override suspend fun clearBasket(): Boolean = try {

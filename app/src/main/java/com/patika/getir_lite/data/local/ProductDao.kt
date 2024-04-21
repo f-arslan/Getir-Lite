@@ -5,38 +5,60 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
+import com.patika.getir_lite.data.local.model.ItemEntity
+import com.patika.getir_lite.data.local.model.ProductEntity
 import com.patika.getir_lite.data.local.model.OrderEntity
 import com.patika.getir_lite.data.local.model.OrderStatus
-import com.patika.getir_lite.data.local.model.ProductEntity
 import com.patika.getir_lite.model.BasketWithProducts
 import com.patika.getir_lite.model.ProductType
+import com.patika.getir_lite.model.ProductWithCount
 import kotlinx.coroutines.flow.Flow
+import java.math.BigDecimal
 
 @Dao
 interface ProductDao {
     @Insert
-    suspend fun insertProduct(productEntity: ProductEntity)
-
-    @Insert
     suspend fun insertOrder(orderEntity: OrderEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertItems(productEntities: List<ProductEntity>)
+    suspend fun insertProducts(productNEntities: List<ProductEntity>)
 
-    @Query("SELECT * FROM items WHERE productType = :productType")
-    fun getAllItemsByType(productType: ProductType): Flow<List<ProductEntity>>
+    @Query(
+        """
+    SELECT p.id as productId, p.name, p.price, p.attribute, p.imageURL, p.productType, IFNULL(SUM(i.count), 0) as count
+    FROM products p
+    LEFT JOIN items i ON p.id = i.productId 
+    AND i.orderId = (SELECT o.id FROM orders o WHERE o.orderStatus = :orderStatus ORDER BY o.id DESC LIMIT 1)
+    WHERE p.productType = :productType
+    GROUP BY p.id
+    """
+    )
+    fun getProductsWithCounts(
+        productType: ProductType,
+        orderStatus: OrderStatus = OrderStatus.ON_BASKET
+    ): Flow<List<ProductWithCount>>
 
-    @Query("SELECT * FROM items")
+    @Query(
+        """
+    SELECT p.id as productId, p.name, p.price, p.attribute, p.imageURL, p.productType, IFNULL(SUM(i.count), 0) as count
+    FROM products p
+    LEFT JOIN items i ON p.id = i.productId
+    AND i.orderId = (SELECT o.id FROM orders o WHERE o.orderStatus = :orderStatus ORDER BY o.id DESC LIMIT 1)
+    WHERE p.id = :productId
+    GROUP BY p.id
+    """
+    )
+    fun getProductWithCount(
+        productId: Long,
+        orderStatus: OrderStatus = OrderStatus.ON_BASKET
+    ): Flow<ProductWithCount?>
+
+    @Query("SELECT * FROM products")
     suspend fun getAllItems(): List<ProductEntity>
 
-    @Query("UPDATE items SET orderId = :orderId, count = count + :count WHERE id = :productId")
-    suspend fun updateItemCountOrder(productId: Long, count: Int, orderId: Long)
-
-    @Query("SELECT * FROM items WHERE id = :productId")
+    @Query("SELECT * FROM products WHERE id = :productId")
     suspend fun getProductById(productId: Long): ProductEntity
-
-    @Query("SELECT * FROM items WHERE id = :productId")
-    fun getProductByIdAsFlow(productId: Long): Flow<ProductEntity?>
 
     @Query("SELECT * FROM orders WHERE id = :orderId")
     suspend fun getOrderById(orderId: Long): OrderEntity
@@ -48,7 +70,7 @@ interface ProductDao {
     fun getActiveOrderAsFlow(status: OrderStatus): Flow<OrderEntity?>
 
     @Query("UPDATE orders SET totalPrice = totalPrice + :price WHERE id = :orderId")
-    suspend fun updateActiveOrderPrice(orderId: Long, price: Double)
+    suspend fun updateActiveOrderPrice(orderId: Long, price: BigDecimal)
 
     @Query("UPDATE items SET orderId = -1, count = 0 WHERE orderId = :orderId")
     suspend fun clearBasket(orderId: Long)
@@ -56,30 +78,42 @@ interface ProductDao {
     @Query("UPDATE orders SET totalPrice = 0, orderStatus = :status WHERE id = :orderId")
     suspend fun finishOrder(orderId: Long, status: OrderStatus = OrderStatus.FINISHED)
 
+
+    @Query("SELECT * FROM items WHERE productId = :productId AND orderId = :orderId")
+    suspend fun getItemByProductAndOrder(productId: Long, orderId: Long): ItemEntity?
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertItem(item: ItemEntity): Long
+
+    @Update
+    fun updateItem(item: ItemEntity)
+
     @Transaction
-    suspend fun updateItem(productId: Long, count: Int) {
-        val product = getProductById(productId)
-        if (product.count == 0 && count < 0) return
+    suspend fun addItemToBasket(productId: Long, orderId: Long, price: BigDecimal) {
+        val itemEntity = getItemByProductAndOrder(productId, orderId)
 
-        val getActiveOrder = getActiveOrder(OrderStatus.ON_BASKET)
-
-        val orderId = getActiveOrder?.id ?: run {
-            val id = insertOrder(
-                OrderEntity(orderStatus = OrderStatus.ON_BASKET)
-            )
-            id
+        itemEntity?.let {
+            val c = itemEntity.count + 1
+            val updatedItem = itemEntity.copy(count = c)
+            updateItem(updatedItem)
+        } ?: run {
+            insertItem(ItemEntity(productId = productId, orderId = orderId, count = 1))
         }
 
-        updateItemCountOrder(productId, count, orderId)
+        updateActiveOrderPrice(orderId, price)
+    }
 
-        when {
-            count < 0 -> updateActiveOrderPrice(orderId, -product.price.toDouble())
-            else -> updateActiveOrderPrice(orderId, product.price.toDouble())
-        }
+    @Query("UPDATE items SET count = count - 1 WHERE productId = :productId AND orderId = :orderId AND count > 0")
+    fun decrementItemCount(productId: Long, orderId: Long)
 
-        if (count + product.count == 0) {
-            updateItemCountOrder(productId = productId, count = 0, orderId = -1)
-        }
+    @Query("DELETE FROM items WHERE productId = :productId AND orderId = :orderId AND count <= 0")
+    fun cleanupZeroCountItems(productId: Long, orderId: Long)
+
+    @Transaction
+    suspend fun decrementItemCount(productId: Long, orderId: Long, price: BigDecimal) {
+        decrementItemCount(productId, orderId)
+        cleanupZeroCountItems(productId, orderId)
+        updateActiveOrderPrice(orderId, -price)
     }
 
     @Transaction
