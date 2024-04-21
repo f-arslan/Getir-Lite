@@ -1,6 +1,7 @@
 package com.patika.getir_lite.data.remote.model
 
-import com.patika.getir_lite.model.Product
+import com.patika.getir_lite.data.local.model.ProductEntity
+import com.patika.getir_lite.model.ProductType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -15,13 +16,14 @@ data class ProductDto(
     val shortDescription: String? = null
 )
 
-fun ProductDto.toDomainModel(): Product {
+fun ProductDto.toProductEntity(): ProductEntity {
     val attribute = attribute ?: shortDescription ?: ""
-    return Product(
-        id = id,
+    return ProductEntity(
+        productId = id,
         name = name.trim(),
         price = price.toBigDecimal(),
         attribute = attribute.trim(),
-        imageURL = imageURL
+        imageURL = imageURL,
+        productType = ProductType.PRODUCT
     )
 }
