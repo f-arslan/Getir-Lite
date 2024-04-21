@@ -13,6 +13,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavDirections
+import androidx.navigation.fragment.findNavController
 import androidx.viewbinding.ViewBinding
 import com.google.android.material.snackbar.Snackbar
 import com.patika.getir_lite.R
@@ -22,6 +24,12 @@ import kotlinx.coroutines.launch
 fun Fragment.scopeWithLifecycle(block: suspend CoroutineScope.() -> Unit) {
     viewLifecycleOwner.lifecycleScope.launch {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED, block = block)
+    }
+}
+
+fun Fragment.safeNavigate(direction: NavDirections) {
+    if (isAdded) {
+        this.findNavController().navigate(direction)
     }
 }
 
