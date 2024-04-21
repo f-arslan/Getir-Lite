@@ -3,18 +3,25 @@ package com.patika.getir_lite
 import androidx.annotation.MainThread
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.patika.getir_lite.AnimationState.FINISHED
+import com.patika.getir_lite.AnimationState.IDLE
+import com.patika.getir_lite.AnimationState.OPENED
 import com.patika.getir_lite.data.ProductRepository
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.model.BasketWithProducts
 import com.patika.getir_lite.model.CountType
 import com.patika.getir_lite.model.Order
-import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.model.ProductEvent
+import com.patika.getir_lite.model.ProductWithCount
 import com.patika.getir_lite.util.TopLevelException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
@@ -25,7 +32,9 @@ import javax.inject.Inject
 class ProductViewModel @Inject constructor(private val productRepository: ProductRepository) :
     ViewModel() {
 
-    val products: Flow<BaseResponse<List<Product>>> = productRepository
+    private val actionCompletionSignal = Channel<AnimationState>(Channel.UNLIMITED)
+
+    val products: StateFlow<BaseResponse<List<ProductWithCount>>> = productRepository
         .getProductsAsFlow()
         .transform {
             when {
@@ -42,12 +51,20 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
             initialValue = BaseResponse.Loading
         )
 
-    val suggestedProducts: Flow<BaseResponse<List<Product>>> = productRepository
+    val suggestedProducts = productRepository
         .getSuggestedProductsAsFlow()
-        .transform {
-            when {
-                it.isEmpty() -> emit(BaseResponse.Loading)
-                else -> emit(BaseResponse.Success(it))
+        .combineTransform(actionCompletionSignal.consumeAsFlow()) { suggestedProducts, completionSignal ->
+            when (completionSignal) {
+                FINISHED -> {
+                    emit(BaseResponse.Success(suggestedProducts))
+                    actionCompletionSignal.send(IDLE)
+                }
+
+                OPENED -> {
+                    emit(BaseResponse.Success(suggestedProducts))
+                }
+
+                else -> emit(BaseResponse.Loading)
             }
         }
         .catch { error ->
@@ -90,9 +107,9 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
 
     @MainThread
     fun initializeProductData() = viewModelScope.launch {
+        actionCompletionSignal.trySend(OPENED)
         productRepository.syncWithRemote()
     }
-
 
     fun onEvent(event: ProductEvent) {
         viewModelScope.launch {
@@ -103,12 +120,24 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
 
                 is ProductEvent.OnMinusClick -> {
                     productRepository.updateItemCount(event.entityId, CountType.MINUS_ONE)
+                    if (event.count > 1) notifyActionCompleted(OPENED)
                 }
 
                 is ProductEvent.OnPlusClick -> {
                     productRepository.updateItemCount(event.entityId, CountType.PLUS_ONE)
+                    if (event.count >= 1) notifyActionCompleted(OPENED)
                 }
             }
         }
     }
+
+    fun notifyActionCompleted(animationState: AnimationState) {
+        viewModelScope.launch {
+            actionCompletionSignal.send(animationState)
+        }
+    }
+}
+
+enum class AnimationState {
+    IDLE, FINISHED, OPENED
 }
