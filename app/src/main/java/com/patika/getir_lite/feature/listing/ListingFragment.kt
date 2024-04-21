@@ -1,24 +1,22 @@
 package com.patika.getir_lite.feature.listing
 
 import android.content.res.Configuration
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.GridLayoutManager
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.patika.getir_lite.ProductViewModel
 import com.patika.getir_lite.databinding.FragmentListingBinding
-import com.patika.getir_lite.databinding.ItemListingBinding
 import com.patika.getir_lite.feature.BaseFragment
 import com.patika.getir_lite.feature.adapter.ProductAdapter
 import com.patika.getir_lite.feature.adapter.ProductListAdapter
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.util.decor.GridSpacingItemDecoration
 import com.patika.getir_lite.util.ext.animateBasketVisibility
+import com.patika.getir_lite.util.ext.safeNavigate
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -30,7 +28,7 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
     private val productViewModel: ProductViewModel by activityViewModels()
     private lateinit var suggestedProductListAdapter: ProductListAdapter
-    private lateinit var productAdapter: ProductAdapter<ItemListingBinding>
+    private lateinit var productAdapter: ProductAdapter
 
     override fun inflateBinding(
         inflater: LayoutInflater,
@@ -52,7 +50,7 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         )
 
         productAdapter = ProductAdapter(
-            bindingInflater = ItemListingBinding::inflate,
+            viewType = ProductAdapter.LISTING_VIEW_TYPE,
             events = productViewModel::onEvent,
             onProductClick = ::navigateToDetailFragment
         )
@@ -85,12 +83,8 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         }
     }
 
-    private fun navigateToDetailFragment(productId: Long) {
-        if (isAdded) {
-            findNavController().navigate(
-                ListingFragmentDirections.actionListingFragmentToDetailFragment(productId)
-            )
-        }
+    private fun navigateToDetailFragment(productId: Long, count: Int = -1) {
+        safeNavigate(ListingFragmentDirections.actionListingFragmentToDetailFragment(productId))
     }
 
     private fun FragmentListingBinding.observeRemoteChanges() = with(productViewModel) {
@@ -175,11 +169,7 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
     private fun FragmentListingBinding.onBasketClick() {
         layoutTotalPriceCard.cvTotalPrice.setOnClickListener {
-            if (isAdded) {
-                findNavController().navigate(
-                    ListingFragmentDirections.actionListingFragmentToBasketFragment()
-                )
-            }
+            safeNavigate(ListingFragmentDirections.actionListingFragmentToBasketFragment())
         }
     }
 

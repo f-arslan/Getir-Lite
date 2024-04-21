@@ -15,6 +15,7 @@ import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.model.ProductEvent
 import com.patika.getir_lite.util.ext.animateBasketVisibility
 import com.patika.getir_lite.util.ext.formatPrice
+import com.patika.getir_lite.util.ext.safeNavigate
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -50,14 +51,14 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
                     onEvent(ProductEvent.OnDeleteClick(productId))
                 }
                 setOnMinusClickListener {
-                    onEvent(ProductEvent.OnMinusClick(productId))
+                    onEvent(ProductEvent.OnMinusClick(productId, -1))
                 }
                 setOnPlusClickListener {
-                    onEvent(ProductEvent.OnPlusClick(productId))
+                    onEvent(ProductEvent.OnPlusClick(productId, -1))
                 }
             }
             btnAddToBasket.setOnClickListener {
-                onEvent(ProductEvent.OnPlusClick(productId))
+                onEvent(ProductEvent.OnPlusClick(productId, -1))
             }
         }
 
@@ -125,8 +126,6 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
     }
 
     private fun navigateToBasket() {
-        if (isAdded) {
-            findNavController().navigate(DetailFragmentDirections.actionDetailFragmentToBasketFragment())
-        }
+        safeNavigate(DetailFragmentDirections.actionDetailFragmentToBasketFragment())
     }
 }

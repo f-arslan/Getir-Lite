@@ -9,11 +9,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.patika.getir_lite.AnimationState
 import com.patika.getir_lite.ProductViewModel
 import com.patika.getir_lite.R
-import com.patika.getir_lite.data.local.model.toDomainModel
+import com.patika.getir_lite.data.local.model.ItemWithProduct
+import com.patika.getir_lite.data.local.model.toProductWithCount
 import com.patika.getir_lite.databinding.FragmentBasketBinding
-import com.patika.getir_lite.databinding.ItemBasketBinding
 import com.patika.getir_lite.feature.BaseFragment
 import com.patika.getir_lite.feature.adapter.HeaderAdapter
 import com.patika.getir_lite.feature.adapter.ProductAdapter
@@ -22,20 +24,21 @@ import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.util.decor.DividerDecoration
 import com.patika.getir_lite.util.ext.formatPrice
 import com.patika.getir_lite.util.ext.makeSnackbar
+import com.patika.getir_lite.util.ext.safeNavigate
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import com.patika.getir_lite.util.ext.showCancelDialog
 import com.patika.getir_lite.util.ext.showCompleteDialog
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
-class BasketFragment : BaseFragment<FragmentBasketBinding>() {
+class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishListener {
 
     private val viewModel: BasketViewModel by viewModels()
     private val productViewModel: ProductViewModel by activityViewModels()
-    private lateinit var basketProductAdapter: ProductAdapter<ItemBasketBinding>
+    private lateinit var basketProductAdapter: ProductAdapter
     private lateinit var productListAdapter: ProductListAdapter
+    private lateinit var headerAdapter: HeaderAdapter
 
     override fun inflateBinding(
         inflater: LayoutInflater,
@@ -43,6 +46,7 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
     ): FragmentBasketBinding = FragmentBasketBinding.inflate(inflater, container, false)
 
     override fun FragmentBasketBinding.onMain() {
+        productViewModel.notifyActionCompleted(AnimationState.FINISHED)
         setupTextView()
         setupRecycleViewAndAdapters()
         listenBasketWithProducts()
@@ -89,19 +93,13 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
 
     private fun FragmentBasketBinding.setupRecycleViewAndAdapters() {
         basketProductAdapter = ProductAdapter(
-            bindingInflater = ItemBasketBinding::inflate,
+            viewType = ProductAdapter.BASKET_VIEW_TYPE,
             events = productViewModel::onEvent,
             onProductClick = ::navigateToDetailFragment
         )
 
-        val divider = ContextCompat.getDrawable(requireContext(), R.drawable.divider)
-        val margin = resources.getDimensionPixelSize(R.dimen.margin_8)
-        divider?.let {
-            rvBasket.addItemDecoration(DividerDecoration(divider, margin))
-        }
-        rvBasket.itemAnimator = null
+        headerAdapter = HeaderAdapter(getString(R.string.suggested_product))
 
-        val headerAdapter = HeaderAdapter(getString(R.string.suggested_product))
         productListAdapter = ProductListAdapter(
             events = productViewModel::onEvent,
             onProductClick = ::navigateToDetailFragment
@@ -109,22 +107,21 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
 
         val concatAdapter = ConcatAdapter(basketProductAdapter, headerAdapter, productListAdapter)
         rvBasket.adapter = concatAdapter
+        rvBasket.itemAnimator = RVItemAnimator(this@BasketFragment)
+
+        val divider = ContextCompat.getDrawable(requireContext(), R.drawable.divider)
+        val margin = resources.getDimensionPixelSize(R.dimen.margin_8)
+        divider?.let {
+            rvBasket.addItemDecoration(DividerDecoration(divider, margin))
+        }
     }
 
     private fun navigateToDetailFragment(productId: Long) {
-        if (isAdded) {
-            findNavController().navigate(
-                BasketFragmentDirections.actionBasketFragmentToDetailFragment(productId)
-            )
-        }
+        safeNavigate(BasketFragmentDirections.actionBasketFragmentToDetailFragment(productId))
     }
 
     private fun navigateToListing() {
-        if (isAdded) {
-            findNavController().navigate(
-                BasketFragmentDirections.actionBasketFragmentToListingFragment()
-            )
-        }
+        safeNavigate(BasketFragmentDirections.actionBasketFragmentToListingFragment())
     }
 
     private fun listenSuggestedProducts() = scopeWithLifecycle {
@@ -147,14 +144,14 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
                     is BaseResponse.Success -> {
                         val data = response.data
                         val price = data.order.totalPrice.formatPrice()
-                        basketProductAdapter.saveData(data.products.map { it.toDomainModel() })
+                        basketProductAdapter.saveData(data.itemsWithProducts.map(ItemWithProduct::toProductWithCount))
                         tvFinalPrice.text = price
                         SpannableString(price).apply {
                             setSpan(StrikethroughSpan(), 0, price.length, 0)
                             tvOldPrice.text = this
                         }
                         if (data.order.totalPrice.toDouble() == 0.0) {
-                            navigateToListingWithAnimDelay()
+                            navigateToListing()
                         }
                     }
 
@@ -164,20 +161,20 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
         }
     }
 
-    private fun navigateToListingWithAnimDelay() = scopeWithLifecycle {
-        val maxAnimDuration = binding.rvBasket.itemAnimator?.let {
-            listOf(
-                it.addDuration,
-                it.removeDuration,
-                it.moveDuration,
-                it.changeDuration
-            ).maxOrNull() ?: 0L
-        } ?: 0L
-        delay(maxAnimDuration + 150L)
-        navigateToListing()
-    }
-
     private fun FragmentBasketBinding.setupTextView() {
         layoutToolbar.textView.text = getString(R.string.basket_title)
+    }
+
+    override fun onAddFinished(item: RecyclerView.ViewHolder) {
+        productViewModel.notifyActionCompleted(AnimationState.FINISHED)
+    }
+
+    override fun onRemoveFinished(item: RecyclerView.ViewHolder) {
+        productViewModel.notifyActionCompleted(AnimationState.FINISHED)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        productViewModel.notifyActionCompleted(AnimationState.OPENED)
     }
 }

@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.patika.getir_lite.data.ProductRepository
 import com.patika.getir_lite.model.BaseResponse
-import com.patika.getir_lite.model.Product
+import com.patika.getir_lite.model.ProductWithCount
 import com.patika.getir_lite.util.TopLevelException.ProductNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class DetailViewModel @Inject constructor(
     private val productRepository: ProductRepository
 ) : ViewModel() {
-    private val _productState = MutableStateFlow<BaseResponse<Product>>(BaseResponse.Loading)
+    private val _productState = MutableStateFlow<BaseResponse<ProductWithCount>>(BaseResponse.Loading)
     val productState = _productState.asStateFlow()
 
     @MainThread
