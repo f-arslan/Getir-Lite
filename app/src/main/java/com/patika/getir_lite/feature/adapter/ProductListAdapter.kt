@@ -4,11 +4,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.patika.getir_lite.databinding.ItemListingBinding
 import com.patika.getir_lite.databinding.SuggestedProductBinding
-import com.patika.getir_lite.model.Product
 import com.patika.getir_lite.model.ProductEvent
+import com.patika.getir_lite.model.ProductWithCount
 import com.patika.getir_lite.util.decor.MarginItemDecoration
 
 class ProductListAdapter(
@@ -17,7 +17,7 @@ class ProductListAdapter(
 ) : RecyclerView.Adapter<ProductListAdapter.ProductListViewHolder>() {
 
     val productAdapter = ProductAdapter(
-        bindingInflater = ItemListingBinding::inflate,
+        viewType = ProductAdapter.LISTING_VIEW_TYPE,
         events = events,
         onProductClick = onProductClick
     )
@@ -34,14 +34,15 @@ class ProductListAdapter(
         holder.bind()
     }
 
-
     inner class ProductListViewHolder(private val binding: SuggestedProductBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind() {
             binding.rvSuggestedProduct.apply {
                 if (adapter == null) {
-                    loadViews(this)
+                    layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
                     adapter = productAdapter
+                    isNestedScrollingEnabled = false
+                    loadViews(this)
                     addItemDecoration(MarginItemDecoration())
                 }
             }
@@ -58,7 +59,7 @@ class ProductListAdapter(
         }
     }
 
-    fun saveData(data: List<Product>) {
+    fun saveData(data: List<ProductWithCount>) {
         productAdapter.saveData(data)
     }
 
