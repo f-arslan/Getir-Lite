@@ -95,4 +95,7 @@ dependencies {
 
     // RecyclerView
     implementation(libs.androidx.recyclerview)
+
+    // Splash
+    implementation(libs.androidx.splashscreen)
 }
