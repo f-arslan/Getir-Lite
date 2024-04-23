@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Getir-Lite</string>
+    <string name="app_name">Getir Lite</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="food_image">food image</string>
     <string name="add_item">Add Item</string>
@@ -15,12 +15,16 @@
     <string name="basket_delete_dialog_text">Sepetini boşaltmak istediğinden emin misin?</string>
     <string name="no">Hayır</string>
     <string name="yes">Evet</string>
+    <string name="delete">Delete</string>
     <string name="suggested_product">Önerilen Ürünler</string>
     <string name="complete_dialog">Siparişinizi verdiniz 🙂 Sosyal teması azaltmak için siparişinizi kapınıza bırakacağız.</string>
     <string name="complete">Tamam</string>
+    <string name="total_price">Toplam Tutar: %s</string>
     <style name="product_name">Product Name</style>
+
     <string name="generic_error">Some error occurred, try again.</string>
     <string name="image">Image</string>
+    <string name="basket_already_empty">Your basket is already empty, you can add something…</string>
 
     <style name="attribute">Attribute</style>
 </resources>

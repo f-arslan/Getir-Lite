@@ -1,6 +1,5 @@
 package com.patika.getir_lite.fake
 
-import com.patika.getir_lite.data.DataSyncResult
 import com.patika.getir_lite.data.ProductRepository
 import com.patika.getir_lite.data.local.model.ItemEntity
 import com.patika.getir_lite.data.local.model.ItemWithProduct
@@ -10,63 +9,53 @@ import com.patika.getir_lite.data.local.model.ProductEntity
 import com.patika.getir_lite.data.local.model.toDomainModel
 import com.patika.getir_lite.fake.data.fakeProductWithCounts
 import com.patika.getir_lite.model.BaseResponse
-import com.patika.getir_lite.model.BasketWithProducts
+import com.patika.getir_lite.data.local.model.BasketWithProducts
+import com.patika.getir_lite.data.local.model.StatusEntity
 import com.patika.getir_lite.model.CountType
 import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.ProductType
 import com.patika.getir_lite.model.ProductWithCount
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import java.math.BigDecimal
 
+/**
+ * A mock implementation of [ProductRepository] for use in tests or development environments.
+ * This class simulates the behavior of a real product repository by storing and managing in-memory lists of products and orders.
+ */
 class FakeProductDataSource : ProductRepository {
     private val localProducts = fakeProductWithCounts.toMutableList()
     val orders = mutableListOf<OrderEntity>()
     private val items = mutableListOf<ItemEntity>()
 
-    private val _dataSyncResult = MutableStateFlow<List<DataSyncResult>>(emptyList())
-    override val dataSyncResult: StateFlow<List<DataSyncResult>> = _dataSyncResult
-
-    override suspend fun syncWithRemote(): BaseResponse<Unit> {
+    override suspend fun fetchDataFromRemote(): BaseResponse<Unit> {
         return BaseResponse.Success(Unit)
     }
 
     override fun getProductsAsFlow(): Flow<List<ProductWithCount>> = flow {
-        emit(localProducts.filter { it.productType == ProductType.PRODUCT })
+        emit(localProducts.filter { it.type == ProductType.PRODUCT })
     }
 
     override fun getSuggestedProductsAsFlow(): Flow<List<ProductWithCount>> = flow {
-        emit(localProducts.filter { it.productType == ProductType.SUGGESTED_PRODUCT })
+        emit(localProducts.filter { it.type == ProductType.SUGGESTED_PRODUCT })
     }
 
     override fun getBasketAsFlow(): Flow<Order?> = flow {
         emit(orders.firstOrNull { it.orderStatus == OrderStatus.ON_BASKET }?.toDomainModel())
     }
 
-    fun ProductWithCount.toProductEntity(): ProductEntity {
-        return ProductEntity(
-            id = productId,
-            productId = "",
-            name = name,
-            price = price,
-            attribute = attribute ?: "",
-            imageURL = imageURL,
-            productType = productType,
-        )
-    }
-
     override fun getBasketWithProductsAsFlow(): Flow<BasketWithProducts?> = flow {
         val order = orders.firstOrNull { it.orderStatus == OrderStatus.ON_BASKET }
             ?: return@flow emit(null)
+
         val items = items.filter { it.orderId == order.id }
         val products = localProducts.filter { product ->
             items.any { it.productId == product.productId }
         }
+
         val itemWithProducts = items.map { item ->
             val product = products.find { it.productId == item.productId }
-                ?: throw Exception("Product not found")
+                ?: throw Exception("Product not found: ${item.productId}")
             ItemWithProduct(item, product.toProductEntity())
         }
         emit(BasketWithProducts(order, itemWithProducts))
@@ -96,14 +85,15 @@ class FakeProductDataSource : ProductRepository {
             items.add(item)
         }
 
-        val order = orders.find { it.id == orderId } ?: throw Exception("Order not found")
+        val order = orders.find { it.id == orderId } ?: throw Exception("Order not found: $orderId")
         val updatedOrder =
             order.copy(totalPrice = (order.totalPrice.toDouble() + price.toDouble()).toBigDecimal())
         val orderIndex = orders.indexOf(order)
         orders[orderIndex] = updatedOrder
 
         val product =
-            localProducts.find { it.productId == productId } ?: throw Exception("Product not found")
+            localProducts.find { it.productId == productId }
+                ?: throw Exception("Product not found $productId")
         val updatedProduct = product.copy(count = product.count + 1)
         val productIndex = localProducts.indexOf(product)
         localProducts[productIndex] = updatedProduct
@@ -111,7 +101,8 @@ class FakeProductDataSource : ProductRepository {
 
     private fun decrementItemCount(productId: Long, orderId: Long, price: BigDecimal) {
         val itemEntity =
-            getItemByProductAndOrder(productId, orderId) ?: throw Exception("Item not found")
+            getItemByProductAndOrder(productId, orderId)
+                ?: throw Exception("Item not found: productId=$productId, orderId=$orderId")
         val c = itemEntity.count - 1
         val updatedItem = itemEntity.copy(count = c)
         val index = items.indexOf(itemEntity)
@@ -121,7 +112,7 @@ class FakeProductDataSource : ProductRepository {
             items.removeAt(index)
         }
 
-        val order = orders.find { it.id == orderId } ?: throw Exception("Order not found")
+        val order = orders.find { it.id == orderId } ?: throw Exception("Order not found: $orderId")
         val updatedOrder =
             order.copy(totalPrice = (order.totalPrice.toDouble() - price.toDouble()).toBigDecimal())
         val orderIndex = orders.indexOf(order)
@@ -134,10 +125,10 @@ class FakeProductDataSource : ProductRepository {
         localProducts[productIndex] = updatedProduct
     }
 
-    override suspend fun updateItemCount(productId: Long, countType: CountType) {
+    override suspend fun updateItemCount(productId: Long, countType: CountType) = runCatching {
         val getActiveOrder = orders.firstOrNull { it.orderStatus == OrderStatus.ON_BASKET }
         val productPrice = localProducts.find { it.productId == productId }?.price
-            ?: throw Exception("Product not found")
+            ?: throw Exception("Product not found: $productId")
         val orderId = getActiveOrder?.id ?: run {
             val id = (0..100000).random().toLong()
             val orderEntity = OrderEntity(id = id, OrderStatus.ON_BASKET)
@@ -170,5 +161,21 @@ class FakeProductDataSource : ProductRepository {
         orders[orderIndex] = updatedOrder
 
         return true
+    }
+
+    override suspend fun getStatus(): List<StatusEntity?> {
+        return emptyList()
+    }
+
+    private fun ProductWithCount.toProductEntity(): ProductEntity {
+        return ProductEntity(
+            id = productId,
+            productId = "",
+            name = name,
+            price = price,
+            attribute = attribute ?: "",
+            imageURL = imageURL,
+            productType = type,
+        )
     }
 }

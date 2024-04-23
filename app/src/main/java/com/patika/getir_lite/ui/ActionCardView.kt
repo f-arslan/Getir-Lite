@@ -15,6 +15,10 @@ import com.patika.getir_lite.model.ItemActionType.PLUS_MINUS
 import com.patika.getir_lite.util.ext.setVisibility
 import com.patika.getir_lite.util.ext.toItemActionType
 
+/**
+ * A custom [CardView] that provides an action card with buttons for incrementing, decrementing,
+ * and deleting an item count. It supports custom attributes and dynamic orientation adjustments.
+ */
 class ActionCardView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : CardView(context, attrs, defStyleAttr) {
@@ -90,6 +94,9 @@ class ActionCardView @JvmOverloads constructor(
         swapViewsInLinearLayout()
     }
 
+    /**
+     * Rearranges the button views in the linear layout based on the current orientation.
+     */
     private fun swapViewsInLinearLayout() {
         if (orientation == 1) {
             linearLayout.removeView(btnMinus)
@@ -114,7 +121,19 @@ class ActionCardView @JvmOverloads constructor(
         btnAdd.setOnClickListener(listener)
     }
 
-    fun setCount(count: Int) {
+    fun disableButtons() {
+        btnMinus.isClickable = false
+        btnDelete.isClickable = false
+        btnAdd.isClickable = false
+    }
+
+    fun enableButtons() {
+        btnMinus.isClickable = true
+        btnDelete.isClickable = true
+        btnAdd.isClickable = true
+    }
+
+    fun setActionVisibilityAndCount(count: Int) {
         val actionType = count.toItemActionType()
         btnMinus.setVisibility(actionType == PLUS_MINUS)
         btnDelete.setVisibility(actionType == PLUS_DELETE)

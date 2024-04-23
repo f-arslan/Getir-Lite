@@ -45,8 +45,8 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:textColor="?attr/colorOnSurface"
-            android:textFontWeight="600"
             android:textSize="12sp"
+            android:textStyle="bold"
             tools:text="Product Name" />
 
         <TextView
@@ -57,8 +57,8 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="?attr/colorPrimaryInverse"
-            android:textFontWeight="600"
             android:textSize="12sp"
+            android:textStyle="bold"
             tools:text="Attribute" />
 
         <TextView
@@ -80,13 +80,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
+        android:translationZ="1dp"
         app:buttonContainerSize="32dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:textContainerHeight="32dp"
         app:textContainerWidth="38dp"
-        android:translationZ="1dp"
         app:textSize="14sp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

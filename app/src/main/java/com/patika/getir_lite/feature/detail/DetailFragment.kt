@@ -3,6 +3,7 @@ package com.patika.getir_lite.feature.detail
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -20,6 +21,9 @@ import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 
+/**
+ * A fragment for displaying detailed information about a product.
+ */
 @AndroidEntryPoint
 class DetailFragment : BaseFragment<FragmentDetailBinding>() {
 
@@ -48,17 +52,20 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
         with(productViewModel) {
             with(itemActionView) {
                 setOnDeleteClickListener {
+                    disableButtons()
                     onEvent(ProductEvent.OnDeleteClick(productId))
                 }
                 setOnMinusClickListener {
-                    onEvent(ProductEvent.OnMinusClick(productId, -1))
+                    disableButtons()
+                    onEvent(ProductEvent.OnMinusClick(productId))
                 }
                 setOnPlusClickListener {
-                    onEvent(ProductEvent.OnPlusClick(productId, -1))
+                    disableButtons()
+                    onEvent(ProductEvent.OnPlusClick(productId))
                 }
             }
             btnAddToBasket.setOnClickListener {
-                onEvent(ProductEvent.OnPlusClick(productId, -1))
+                onEvent(ProductEvent.OnPlusClick(productId))
             }
         }
 
@@ -68,7 +75,10 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
                 val count = it.data.count
                 btnAddToBasket.visibility = if (count <= 0) View.VISIBLE else View.GONE
                 itemActionView.visibility = if (count > 0) View.VISIBLE else View.GONE
-                if (count > 0) itemActionView.setCount(count)
+                if (count > 0) {
+                    itemActionView.enableButtons()
+                    itemActionView.setActionVisibilityAndCount(count)
+                }
             }
         }
     }
@@ -85,6 +95,7 @@ class DetailFragment : BaseFragment<FragmentDetailBinding>() {
                     }
                     tvFoodPrice.text = product.price.formatPrice()
                     tvProductName.text = product.name
+                    tvProductAttribute.isVisible = product.attribute?.isNotBlank() ?: false
                     tvProductAttribute.text = product.attribute
                 }
             }

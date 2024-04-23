@@ -4,6 +4,13 @@ import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import androidx.recyclerview.widget.RecyclerView
 
+/**
+ * The dividers are not drawn for the last two items or any item that is currently in a transition state
+ * (e.g., during animations).
+ *
+ * @property divider The drawable used as a divider.
+ * @property margin The margin on both sides of the divider (left and right).
+ */
 class DividerDecoration(private val divider: Drawable, private val margin: Int) :
     RecyclerView.ItemDecoration() {
     override fun onDrawOver(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {

@@ -15,6 +15,14 @@ import kotlinx.coroutines.withContext
 import retrofit2.Response
 import javax.inject.Inject
 
+/**
+ * A data source for fetching product-related data from a remote server.
+ * This class implements the [RemoteRepository] interface, providing methods to fetch product and suggested product data
+ * and handling the conversion of network responses into application-specific response types.
+ *
+ * @property productApi The API service interface for making network requests.
+ * @property ioDispatcher A [CoroutineDispatcher] for running operations on a background thread, typically I/O operations like network requests.
+ */
 class RemoteDataSource @Inject constructor(
     private val productApi: ProductApi,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher

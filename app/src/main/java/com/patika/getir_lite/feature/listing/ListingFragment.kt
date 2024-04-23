@@ -16,6 +16,7 @@ import com.patika.getir_lite.feature.adapter.ProductListAdapter
 import com.patika.getir_lite.model.BaseResponse
 import com.patika.getir_lite.util.decor.GridSpacingItemDecoration
 import com.patika.getir_lite.util.ext.animateBasketVisibility
+import com.patika.getir_lite.util.ext.makeSnackbar
 import com.patika.getir_lite.util.ext.safeNavigate
 import com.patika.getir_lite.util.ext.scopeWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,6 +24,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import java.math.BigDecimal
 
+/**
+ * The fragment integrates with a [ProductViewModel] to fetch and display product data, manage UI states with shimmer effects,
+ * and handle navigation based on user interactions.
+ */
 @AndroidEntryPoint
 class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
@@ -83,7 +88,7 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         }
     }
 
-    private fun navigateToDetailFragment(productId: Long, count: Int = -1) {
+    private fun navigateToDetailFragment(productId: Long) {
         safeNavigate(ListingFragmentDirections.actionListingFragmentToDetailFragment(productId))
     }
 
@@ -94,7 +99,7 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
         scopeWithLifecycle {
             products.collectLatest { response ->
                 when (response) {
-                    is BaseResponse.Error -> Unit
+                    is BaseResponse.Error -> makeSnackbar(response.exception.message)
                     BaseResponse.Loading -> shimmerLayout.startShimmer()
 
                     is BaseResponse.Success -> {
@@ -107,13 +112,8 @@ class ListingFragment : BaseFragment<FragmentListingBinding>() {
 
         scopeWithLifecycle {
             suggestedProducts.collectLatest { response ->
-                when (response) {
-                    is BaseResponse.Error -> Unit
-                    BaseResponse.Loading -> Unit
-
-                    is BaseResponse.Success -> {
-                        suggestedProductListAdapter.saveData(response.data)
-                    }
+                if (response is BaseResponse.Success) {
+                    suggestedProductListAdapter.saveData(response.data)
                 }
             }
         }

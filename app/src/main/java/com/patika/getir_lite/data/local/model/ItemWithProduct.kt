@@ -20,5 +20,5 @@ fun ItemWithProduct.toProductWithCount() = ProductWithCount(
     attribute = product.attribute,
     imageURL = product.imageURL,
     count = item.count,
-    productType = product.productType
+    type = product.productType
 )

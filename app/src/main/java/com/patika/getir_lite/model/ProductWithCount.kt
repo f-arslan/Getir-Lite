@@ -9,5 +9,5 @@ data class ProductWithCount(
     val attribute: String? = null,
     val imageURL: String? = null,
     val count: Int = 0,
-    val productType: ProductType
+    val type: ProductType
 )

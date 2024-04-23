@@ -99,7 +99,7 @@ class ProductRepositoryTest {
         val products = repository.getProductsAsFlow().first()
         assertTrue(products.isNotEmpty())
         products.forEach {
-            assertTrue(it.productType == ProductType.PRODUCT)
+            assertTrue(it.type == ProductType.PRODUCT)
         }
     }
 
@@ -160,7 +160,6 @@ class ProductRepositoryTest {
             basket == null
         )
     }
-
 
     @Test
     fun `updateItemCount decreases item count correctly`() = runTest {

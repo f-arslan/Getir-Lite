@@ -11,6 +11,9 @@ val fakeProductEntities = (1..100).map {
         price = it.toBigDecimal(),
         attribute = "Attribute $it",
         imageURL = "https://picsum.photos/200/300",
-        productType = ProductType.entries.toTypedArray().random()
+        productType = when {
+            it % 2 == 0 -> ProductType.PRODUCT
+            else -> ProductType.SUGGESTED_PRODUCT
+        }
     )
 }

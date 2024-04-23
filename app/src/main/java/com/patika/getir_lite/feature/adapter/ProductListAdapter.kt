@@ -11,6 +11,10 @@ import com.patika.getir_lite.model.ProductEvent
 import com.patika.getir_lite.model.ProductWithCount
 import com.patika.getir_lite.util.decor.MarginItemDecoration
 
+/**
+ * A RecyclerView adapter designed to handle a single item containing a nested list of products, specifically for suggested products.
+ * It uses an inner [ProductAdapter] to manage the actual list of products.
+ */
 class ProductListAdapter(
     events: (ProductEvent) -> Unit,
     onProductClick: (Long) -> Unit
@@ -38,6 +42,7 @@ class ProductListAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind() {
             binding.rvSuggestedProduct.apply {
+                itemAnimator = null
                 if (adapter == null) {
                     layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
                     adapter = productAdapter
@@ -49,6 +54,11 @@ class ProductListAdapter(
         }
     }
 
+    /**
+     * Reveals all views within the RecyclerView's parent, typically used to show elements that were conditionally hidden.
+     *
+     * @param recyclerView The RecyclerView whose parent's child views will be made visible.
+     */
     private fun loadViews(recyclerView: RecyclerView) {
         recyclerView.let {
             val parent = it.parent as ViewGroup
@@ -59,6 +69,11 @@ class ProductListAdapter(
         }
     }
 
+    /**
+     * Passes a new list of products to the inner [ProductAdapter] to display.
+     *
+     * @param data The list of [ProductWithCount] items to be displayed.
+     */
     fun saveData(data: List<ProductWithCount>) {
         productAdapter.saveData(data)
     }

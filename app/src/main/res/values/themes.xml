@@ -33,6 +33,11 @@
         <item name="snackbarStyle">@style/AppSnackbarStyle</item>
     </style>
 
+    <style name="Theme.Getir.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/getir_splash_icon</item>
+        <item name="postSplashScreenTheme">@style/Theme.GetirLite</item>
+    </style>
+
     <style name="Theme.GetirLite" parent="Base.Theme.GetirLite" />
 
     <style name="AppSnackbarStyle" parent="Widget.MaterialComponents.Snackbar">

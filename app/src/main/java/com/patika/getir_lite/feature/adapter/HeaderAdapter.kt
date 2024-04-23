@@ -6,6 +6,14 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.patika.getir_lite.databinding.ListHeaderBinding
 
+/**
+ * A RecyclerView adapter for displaying a single header item in a list.
+ * This adapter is configurable with a header text, height, and background color.
+ *
+ * @property header The text to be displayed in the header. If empty, the header will be hidden.
+ * @property height The height of the header view. If set to 0, the default layout height is used.
+ * @property color The background color of the header view. If set to 0, the default color is used.
+ */
 class HeaderAdapter(
     private val header: String = "",
     private val height: Int = 0,

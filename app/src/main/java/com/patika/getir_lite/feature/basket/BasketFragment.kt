@@ -9,8 +9,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.RecyclerView
-import com.patika.getir_lite.AnimationState
 import com.patika.getir_lite.ProductViewModel
 import com.patika.getir_lite.R
 import com.patika.getir_lite.data.local.model.ItemWithProduct
@@ -30,15 +28,20 @@ import com.patika.getir_lite.util.ext.showCancelDialog
 import com.patika.getir_lite.util.ext.showCompleteDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import java.math.BigDecimal
 
+/**
+ * A fragment for displaying and managing a basket of products This clas handles the UI related to the
+ * shopping basket, including interactions such as completing or clearing the basket,
+ * and navigating to product details or the listing page.
+ */
 @AndroidEntryPoint
-class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishListener {
+class BasketFragment : BaseFragment<FragmentBasketBinding>() {
 
     private val viewModel: BasketViewModel by viewModels()
     private val productViewModel: ProductViewModel by activityViewModels()
     private lateinit var basketProductAdapter: ProductAdapter
     private lateinit var productListAdapter: ProductListAdapter
-    private lateinit var headerAdapter: HeaderAdapter
 
     override fun inflateBinding(
         inflater: LayoutInflater,
@@ -46,7 +49,6 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishLis
     ): FragmentBasketBinding = FragmentBasketBinding.inflate(inflater, container, false)
 
     override fun FragmentBasketBinding.onMain() {
-        productViewModel.notifyActionCompleted(AnimationState.FINISHED)
         setupTextView()
         setupRecycleViewAndAdapters()
         listenBasketWithProducts()
@@ -59,7 +61,10 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishLis
 
     private fun FragmentBasketBinding.finishOrderClick() {
         btnCompleteBasket.setOnClickListener {
-            viewModel.onFinishOrderClick()
+            showCompleteDialog(
+                tvFinalPrice.text.toString(),
+                viewModel::onClearAndFinishBasketClick
+            )
         }
     }
 
@@ -71,10 +76,10 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishLis
 
         viewModel.basketUiState.collectLatest { state ->
             when (state) {
-                BasketUiState.Cleaned -> performNavigation(::navigateToListing)
-                BasketUiState.Completed -> showCompleteDialog { performNavigation(::navigateToListing) }
+                BasketUiState.Completed -> performNavigation(::navigateToListing)
+
                 is BasketUiState.Error -> makeSnackbar(state.exception.message)
-                BasketUiState.Idle -> Unit
+                else -> Unit
             }
         }
     }
@@ -88,7 +93,12 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishLis
     }
 
     private fun FragmentBasketBinding.listenDeleteBasketClick() {
-        btnDeleteBasket.setOnClickListener { showCancelDialog(viewModel::onClearBasketClick) }
+        btnDeleteBasket.setOnClickListener {
+            when {
+                isZero -> makeSnackbar(getString(R.string.basket_already_empty))
+                else -> showCancelDialog(viewModel::onClearAndFinishBasketClick)
+            }
+        }
     }
 
     private fun FragmentBasketBinding.setupRecycleViewAndAdapters() {
@@ -98,7 +108,7 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishLis
             onProductClick = ::navigateToDetailFragment
         )
 
-        headerAdapter = HeaderAdapter(getString(R.string.suggested_product))
+        val headerAdapter = HeaderAdapter(getString(R.string.suggested_product))
 
         productListAdapter = ProductListAdapter(
             events = productViewModel::onEvent,
@@ -107,7 +117,7 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishLis
 
         val concatAdapter = ConcatAdapter(basketProductAdapter, headerAdapter, productListAdapter)
         rvBasket.adapter = concatAdapter
-        rvBasket.itemAnimator = RVItemAnimator(this@BasketFragment)
+        rvBasket.itemAnimator = null
 
         val divider = ContextCompat.getDrawable(requireContext(), R.drawable.divider)
         val margin = resources.getDimensionPixelSize(R.dimen.margin_8)
@@ -137,21 +147,24 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishLis
         }
     }
 
+    private var isZero = true
     private fun FragmentBasketBinding.listenBasketWithProducts() = with(productViewModel) {
         scopeWithLifecycle {
             basketWithProducts.collectLatest { response ->
                 when (response) {
                     is BaseResponse.Success -> {
                         val data = response.data
-                        val price = data.order.totalPrice.formatPrice()
+                        val price =
+                            data.order.totalPrice.also {
+                                isZero = it <= BigDecimal.ZERO
+                            }
+                                .formatPrice()
+
                         basketProductAdapter.saveData(data.itemsWithProducts.map(ItemWithProduct::toProductWithCount))
                         tvFinalPrice.text = price
                         SpannableString(price).apply {
                             setSpan(StrikethroughSpan(), 0, price.length, 0)
                             tvOldPrice.text = this
-                        }
-                        if (data.order.totalPrice.toDouble() == 0.0) {
-                            navigateToListing()
                         }
                     }
 
@@ -163,18 +176,5 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>(), AnimationFinishLis
 
     private fun FragmentBasketBinding.setupTextView() {
         layoutToolbar.textView.text = getString(R.string.basket_title)
-    }
-
-    override fun onAddFinished(item: RecyclerView.ViewHolder) {
-        productViewModel.notifyActionCompleted(AnimationState.FINISHED)
-    }
-
-    override fun onRemoveFinished(item: RecyclerView.ViewHolder) {
-        productViewModel.notifyActionCompleted(AnimationState.FINISHED)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        productViewModel.notifyActionCompleted(AnimationState.OPENED)
     }
 }
