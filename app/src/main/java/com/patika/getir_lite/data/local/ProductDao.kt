@@ -7,11 +7,13 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.patika.getir_lite.data.local.model.ItemEntity
-import com.patika.getir_lite.data.local.model.ProductEntity
 import com.patika.getir_lite.data.local.model.OrderEntity
 import com.patika.getir_lite.data.local.model.OrderStatus
-import com.patika.getir_lite.model.BasketWithProducts
+import com.patika.getir_lite.data.local.model.ProductEntity
+import com.patika.getir_lite.data.local.model.BasketWithProducts
+import com.patika.getir_lite.data.local.model.StatusEntity
 import com.patika.getir_lite.model.ProductType
+import com.patika.getir_lite.model.ProductType.*
 import com.patika.getir_lite.model.ProductWithCount
 import kotlinx.coroutines.flow.Flow
 import java.math.BigDecimal
@@ -22,11 +24,11 @@ interface ProductDao {
     suspend fun insertOrder(orderEntity: OrderEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertProducts(productNEntities: List<ProductEntity>)
+    suspend fun insertProducts(productEntities: List<ProductEntity>)
 
     @Query(
         """
-    SELECT p.id as productId, p.name, p.price, p.attribute, p.imageURL, p.productType, IFNULL(SUM(i.count), 0) as count
+    SELECT p.id as productId, p.name, p.price, p.attribute, p.imageURL, p.productType as type, IFNULL(SUM(i.count), 0) as count
     FROM products p
     LEFT JOIN items i ON p.id = i.productId 
     AND i.orderId = (SELECT o.id FROM orders o WHERE o.orderStatus = :orderStatus ORDER BY o.id DESC LIMIT 1)
@@ -41,7 +43,7 @@ interface ProductDao {
 
     @Query(
         """
-    SELECT p.id as productId, p.name, p.price, p.attribute, p.imageURL, p.productType, IFNULL(SUM(i.count), 0) as count
+    SELECT p.id as productId, p.name, p.price, p.attribute, p.imageURL, p.productType as type, IFNULL(SUM(i.count), 0) as count
     FROM products p
     LEFT JOIN items i ON p.id = i.productId
     AND i.orderId = (SELECT o.id FROM orders o WHERE o.orderStatus = :orderStatus ORDER BY o.id DESC LIMIT 1)
@@ -72,9 +74,6 @@ interface ProductDao {
     @Query("UPDATE orders SET totalPrice = totalPrice + :price WHERE id = :orderId")
     suspend fun updateActiveOrderPrice(orderId: Long, price: BigDecimal)
 
-    @Query("UPDATE items SET orderId = -1, count = 0 WHERE orderId = :orderId")
-    suspend fun clearBasket(orderId: Long)
-
     @Query("UPDATE orders SET totalPrice = 0, orderStatus = :status WHERE id = :orderId")
     suspend fun finishOrder(orderId: Long, status: OrderStatus = OrderStatus.FINISHED)
 
@@ -87,6 +86,18 @@ interface ProductDao {
 
     @Update
     fun updateItem(item: ItemEntity)
+
+    @Insert
+    fun insertStatus(status: StatusEntity): Long
+
+    @Query("UPDATE status SET isSuggestedProductLoaded = :isSuggestedProductLoaded")
+    fun updateSuggestedProductState(isSuggestedProductLoaded: Boolean)
+
+    @Query("UPDATE status SET isProductLoaded = :isProductLoaded")
+    fun updateProductState(isProductLoaded: Boolean)
+
+    @Query("SELECT * FROM status")
+    suspend fun getStatus(): List<StatusEntity>
 
     @Transaction
     suspend fun addItemToBasket(productId: Long, orderId: Long, price: BigDecimal) {
@@ -103,6 +114,21 @@ interface ProductDao {
         updateActiveOrderPrice(orderId, price)
     }
 
+    @Transaction
+    suspend fun insertProductsFirstTime(data: List<ProductEntity>, productType: ProductType) {
+        when (productType) {
+            PRODUCT -> {
+                insertProducts(data)
+                updateProductState(true)
+            }
+
+            SUGGESTED_PRODUCT -> {
+                insertProducts(data)
+                updateSuggestedProductState(true)
+            }
+        }
+    }
+
     @Query("UPDATE items SET count = count - 1 WHERE productId = :productId AND orderId = :orderId AND count > 0")
     fun decrementItemCount(productId: Long, orderId: Long)
 
@@ -111,6 +137,9 @@ interface ProductDao {
 
     @Transaction
     suspend fun decrementItemCount(productId: Long, orderId: Long, price: BigDecimal) {
+        val itemEntity = getItemByProductAndOrder(productId, orderId) ?: return
+        if (itemEntity.count <= 0) return
+
         decrementItemCount(productId, orderId)
         cleanupZeroCountItems(productId, orderId)
         updateActiveOrderPrice(orderId, -price)
@@ -119,7 +148,6 @@ interface ProductDao {
     @Transaction
     suspend fun cancelOrder() {
         val order = getActiveOrder(OrderStatus.ON_BASKET) ?: return
-        clearBasket(order.id)
         finishOrder(order.id)
     }
 

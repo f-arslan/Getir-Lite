@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.TypedArray
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -21,25 +22,42 @@ import com.patika.getir_lite.ui.BorderView
 import com.patika.getir_lite.util.ext.formatPrice
 import com.patika.getir_lite.util.ext.setVisibility
 
+/**
+ * A RecyclerView adapter for handling the display of products with varying view types based on the context (e.g., listing, basket).
+ * The adapter provides functionality to handle user interactions and dynamically update the UI based on product count changes.
+ *
+ * @property viewType An integer representing the type of view that will be used for items in this adapter.
+ * @property events A function to handle product-related events (e.g., add, remove, delete).
+ * @property onProductClick A function to handle clicking on a product, typically used to navigate to a detail view.
+ */
 class ProductAdapter(
     private val viewType: Int,
     private val events: (ProductEvent) -> Unit,
     private val onProductClick: (productId: Long) -> Unit
 ) : ListAdapter<ProductWithCount, ProductAdapter.ProductViewHolder>(ItemDiff) {
 
+    /**
+     * Holds the item count status for animation when product counts change.
+     */
     data class ItemCountStatus(
         val prev: Int = 0,
-        val current: Int = 0,
+        val current: Int = 0
     )
 
-    override fun getItemViewType(position: Int): Int {
-        return viewType
-    }
+    /**
+     * Provides the appropriate view type for items in the adapter based on the predefined view type.
+     */
+    override fun getItemViewType(position: Int): Int = viewType
 
-    private val asyncListDiffer = AsyncListDiffer(this, ItemDiff)
-    private val itemCountStatusMap = HashMap<Long, ItemCountStatus>()
+    private val asyncListDiffer = AsyncListDiffer(this, ItemDiff)  // Manages list diffing to optimize updates.
+    private val itemCountStatusMap = HashMap<Long, ItemCountStatus>()  // Tracks count changes for products to animate or adjust UI.
 
     override fun getItemCount(): Int = asyncListDiffer.currentList.size
+
+    /**
+     * Creates the appropriate ViewHolder based on the viewType.
+     * Supports different layouts for products depending on their context (listing or basket).
+     */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
@@ -62,6 +80,9 @@ class ProductAdapter(
         holder.bind(suggestedProduct)
     }
 
+    /**
+     * Binds the ViewHolder with data and payloads for partial updates, optimizing specific property changes.
+     */
     override fun onBindViewHolder(
         holder: ProductViewHolder,
         position: Int,
@@ -69,8 +90,8 @@ class ProductAdapter(
     ) {
         when (val latestPayloads = payloads.lastOrNull()) {
             is ProductChangePayload.Count -> holder.bindCount(
-                latestPayloads.newCount,
-                latestPayloads.entityId
+                count = latestPayloads.newCount,
+                productId = latestPayloads.productId
             )
 
             else -> onBindViewHolder(holder, position)
@@ -97,7 +118,11 @@ class ProductAdapter(
             ivItem.load(product.imageURL) {
                 crossfade(true)
             }
-            itemActionView.handleActionOperations(product.productId, product.count)
+
+            binding.root.isClickable = true
+            itemActionView.enableButtons()
+            itemActionView.handleActionOperations(product.productId, product.count, binding)
+
             binding.root.setOnClickListener {
                 onProductClick(product.productId)
             }
@@ -107,27 +132,35 @@ class ProductAdapter(
         private fun ItemBasketBinding.bindBasketBinding(product: ProductWithCount) {
             tvItemName.text = product.name
             tvItemAttribute.text = product.attribute
+            tvItemAttribute.isVisible = product.attribute?.isNotBlank() ?: false
             tvItemPrice.text = product.price.formatPrice()
             ivItem.load(product.imageURL) {
                 crossfade(true)
             }
-            itemActionView.handleActionOperations(product.productId, product.count)
+
+            binding.root.isClickable = true
+            itemActionView.enableButtons()
+            itemActionView.handleActionOperations(product.productId, product.count, binding)
             binding.root.setOnClickListener {
                 onProductClick(product.productId)
             }
-            bindCount(product.count)
+            bindCount(count = product.count)
         }
 
-        fun bindCount(count: Int, entityId: Long = 0) {
+        fun bindCount(count: Int, productId: Long = -1) {
             when (binding) {
                 is ItemListingBinding -> {
-                    binding.itemActionView.handleActionOperations(entityId, count)
-                    binding.itemActionView.setCount(count)
-                    updateCardView(binding.itemCard, entityId)
+                    binding.apply { root.isClickable = true }.itemActionView.apply {
+                        enableButtons()
+                        setActionVisibilityAndCount(count)
+                        handleActionOperations(productId, count, binding)
+                    }
+                    updateCardView(binding.itemCard, productId)
                 }
 
                 is ItemBasketBinding -> {
-                    binding.itemActionView.setCount(count)
+                    binding.apply { root.isClickable = true }.itemActionView.enableButtons()
+                    binding.itemActionView.setActionVisibilityAndCount(count)
                 }
 
                 else -> throw IllegalArgumentException("Unknown binding type")
@@ -137,10 +170,10 @@ class ProductAdapter(
         @SuppressLint("ResourceType")
         fun updateCardView(
             itemCard: MaterialCardView,
-            entityId: Long
+            productId: Long
         ) {
             val borderView = itemCard.findViewById<BorderView>(R.id.view_card_border)
-            val status = itemCountStatusMap.getOrDefault(entityId, ItemCountStatus())
+            val status = itemCountStatusMap.getOrDefault(productId, ItemCountStatus())
             val prev = status.prev
             val current = status.current
             val density = itemCard.resources.displayMetrics.density
@@ -161,7 +194,7 @@ class ProductAdapter(
                         borderView.setVisibility(true)
                         itemCard.strokeWidth = 0
                         borderView.startAnimation()
-                        itemCountStatusMap[entityId] = ItemCountStatus(1, 1)
+                        itemCountStatusMap[productId] = ItemCountStatus(1, 1)
                     }
 
                     else -> configureCard(0, false)
@@ -171,15 +204,25 @@ class ProductAdapter(
             }
         }
 
-        private fun ActionCardView.handleActionOperations(entityId: Long, count: Int) {
+        private fun ActionCardView.handleActionOperations(
+            productId: Long,
+            count: Int,
+            binding: ViewBinding
+        ) {
             setOnDeleteClickListener {
-                events(ProductEvent.OnDeleteClick(entityId))
+                binding.root.isClickable = false
+                disableButtons()
+                events(ProductEvent.OnDeleteClick(productId))
             }
             setOnPlusClickListener {
-                events(ProductEvent.OnPlusClick(entityId, count))
+                binding.root.isClickable = false
+                disableButtons()
+                events(ProductEvent.OnPlusClick(productId, count))
             }
             setOnMinusClickListener {
-                events(ProductEvent.OnMinusClick(entityId, count))
+                binding.root.isClickable = false
+                disableButtons()
+                events(ProductEvent.OnMinusClick(productId, count))
             }
         }
 
@@ -192,11 +235,7 @@ class ProductAdapter(
             )
     }
 
-    fun saveData(
-        products: List<ProductWithCount>,
-        recyclerView: RecyclerView? = null,
-        onListSubmit: () -> Unit = {},
-    ) {
+    fun saveData(products: List<ProductWithCount>) {
         for (i in products.indices) {
             val product = products[i]
             val itemStatus =
@@ -209,10 +248,7 @@ class ProductAdapter(
                 itemCountStatusMap[product.productId] = newEntry
             }
         }
-        asyncListDiffer.submitList(products) {
-            onListSubmit()
-            recyclerView?.scrollToPosition(products.size - 1)
-        }
+        asyncListDiffer.submitList(products)
     }
 
     companion object {
@@ -246,6 +282,6 @@ class ProductAdapter(
     }
 
     private sealed interface ProductChangePayload {
-        data class Count(val newCount: Int, val entityId: Long) : ProductChangePayload
+        data class Count(val newCount: Int, val productId: Long) : ProductChangePayload
     }
 }

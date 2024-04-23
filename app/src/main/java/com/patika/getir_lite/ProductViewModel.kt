@@ -3,47 +3,78 @@ package com.patika.getir_lite
 import androidx.annotation.MainThread
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.patika.getir_lite.AnimationState.FINISHED
-import com.patika.getir_lite.AnimationState.IDLE
-import com.patika.getir_lite.AnimationState.OPENED
 import com.patika.getir_lite.data.ProductRepository
+import com.patika.getir_lite.data.local.model.BasketWithProducts
 import com.patika.getir_lite.model.BaseResponse
-import com.patika.getir_lite.model.BasketWithProducts
 import com.patika.getir_lite.model.CountType
 import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.ProductEvent
 import com.patika.getir_lite.model.ProductWithCount
-import com.patika.getir_lite.util.TopLevelException
+import com.patika.getir_lite.util.TopLevelException.GenericException
+import com.patika.getir_lite.util.TopLevelException.NoConnectionException
+import com.patika.getir_lite.util.TopLevelException.ProductNotLoadedException
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combineTransform
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.min
+import kotlin.math.pow
 
+/**
+ * ViewModel responsible for managing UI-related data in a lifecycle-conscious way.
+ * It interacts with [ProductRepository] to fetch and manage product data, handling both
+ * ordinary product queries and specialized cases such as suggested products and basket operations.
+ */
 @HiltViewModel
-class ProductViewModel @Inject constructor(private val productRepository: ProductRepository) :
+class ProductViewModel @Inject constructor(
+    private val productRepository: ProductRepository,
+) :
     ViewModel() {
 
-    private val actionCompletionSignal = Channel<AnimationState>(Channel.UNLIMITED)
-
+    /**
+     * A [StateFlow] of [BaseResponse] that provides a stream of [List] of [ProductWithCount].
+     * It manages the fetching and updating of product data, handling loading states, success,
+     * errors due to product not being loaded, and connectivity issues.
+     *
+     * @property products The flow of product data encapsulated in [BaseResponse], which can
+     * either be a successful data load ([BaseResponse.Success]), an error ([BaseResponse.Error]),
+     * or a loading state ([BaseResponse.Loading]).
+     */
     val products: StateFlow<BaseResponse<List<ProductWithCount>>> = productRepository
         .getProductsAsFlow()
         .transform {
+            val state = productRepository.getStatus().firstOrNull()
             when {
-                it.isEmpty() -> emit(BaseResponse.Loading)
-                else -> emit(BaseResponse.Success(it))
+                state == null -> emit(BaseResponse.Loading)
+                !state.isProductLoaded -> throw ProductNotLoadedException()
+                state.isProductLoaded -> emit(BaseResponse.Success(it))
+                else -> emit(BaseResponse.Loading)
+            }
+        }
+        .retryWhen { cause, attempt ->
+            if (cause is ProductNotLoadedException && attempt < MAX_RETRIES) {
+                val delayTime = calculateDelay(attempt)
+                if (attempt > 0) emit(BaseResponse.Error(NoConnectionException(delayTime)))
+                productRepository.fetchDataFromRemote()
+                delay(delayTime)
+                true
+            } else {
+                false
             }
         }
         .catch { error ->
-            emit(BaseResponse.Error(TopLevelException.GenericException(error.message)))
+            if (error !is ProductNotLoadedException) {
+                emit(BaseResponse.Error(GenericException(error.message)))
+            }
         }
         .stateIn(
             scope = viewModelScope,
@@ -53,22 +84,28 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
 
     val suggestedProducts = productRepository
         .getSuggestedProductsAsFlow()
-        .combineTransform(actionCompletionSignal.consumeAsFlow()) { suggestedProducts, completionSignal ->
-            when (completionSignal) {
-                FINISHED -> {
-                    emit(BaseResponse.Success(suggestedProducts))
-                    actionCompletionSignal.send(IDLE)
-                }
-
-                OPENED -> {
-                    emit(BaseResponse.Success(suggestedProducts))
-                }
-
+        .transform {
+            val state = productRepository.getStatus().firstOrNull()
+            when {
+                state == null -> emit(BaseResponse.Loading)
+                !state.isSuggestedProductLoaded -> throw ProductNotLoadedException()
+                state.isSuggestedProductLoaded -> emit(BaseResponse.Success(it))
                 else -> emit(BaseResponse.Loading)
             }
         }
+        .retryWhen { cause, attempt ->
+            if (cause is ProductNotLoadedException && attempt < MAX_RETRIES) {
+                if (attempt > 0) productRepository.fetchDataFromRemote()
+                delay(calculateDelay(attempt))
+                true
+            } else {
+                false
+            }
+        }
         .catch { error ->
-            emit(BaseResponse.Error(TopLevelException.GenericException(error.message)))
+            if (error !is ProductNotLoadedException) {
+                emit(BaseResponse.Error(GenericException(error.message)))
+            }
         }
         .stateIn(
             scope = viewModelScope,
@@ -80,7 +117,7 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
         .getBasketAsFlow()
         .map<Order?, BaseResponse<Order?>> { BaseResponse.Success(it) }
         .catch { cause ->
-            emit(BaseResponse.Error(TopLevelException.GenericException(cause.message)))
+            emit(BaseResponse.Error(GenericException(cause.message)))
         }
         .stateIn(
             scope = viewModelScope,
@@ -97,7 +134,7 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
             }
         }
         .catch { error ->
-            emit(BaseResponse.Error(TopLevelException.GenericException(error.message)))
+            emit(BaseResponse.Error(GenericException(error.message)))
         }
         .stateIn(
             scope = viewModelScope,
@@ -107,12 +144,20 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
 
     @MainThread
     fun initializeProductData() = viewModelScope.launch {
-        actionCompletionSignal.trySend(OPENED)
-        productRepository.syncWithRemote()
+        productRepository.fetchDataFromRemote()
     }
 
+
+    private var job: Job? = null
+
+    /**
+     * Handles incoming events related to product interactions, such as add or remove actions.
+     *
+     * @param event The product event to handle.
+     */
     fun onEvent(event: ProductEvent) {
-        viewModelScope.launch {
+        job?.cancel()
+        job = viewModelScope.launch {
             when (event) {
                 is ProductEvent.OnDeleteClick -> {
                     productRepository.updateItemCount(event.entityId, CountType.MINUS_ONE)
@@ -120,24 +165,25 @@ class ProductViewModel @Inject constructor(private val productRepository: Produc
 
                 is ProductEvent.OnMinusClick -> {
                     productRepository.updateItemCount(event.entityId, CountType.MINUS_ONE)
-                    if (event.count > 1) notifyActionCompleted(OPENED)
                 }
 
                 is ProductEvent.OnPlusClick -> {
                     productRepository.updateItemCount(event.entityId, CountType.PLUS_ONE)
-                    if (event.count >= 1) notifyActionCompleted(OPENED)
                 }
             }
         }
     }
 
-    fun notifyActionCompleted(animationState: AnimationState) {
-        viewModelScope.launch {
-            actionCompletionSignal.send(animationState)
-        }
+    companion object {
+        private const val MAX_RETRIES = 50
+        private const val RETRY_DELAY_MS = 2000L
+        private const val MAX_DELAY_MS = 30000L
+        val calculateDelay: (Long) -> Long =
+            { attempt: Long ->
+                min(
+                    MAX_DELAY_MS,
+                    RETRY_DELAY_MS * (2.0.pow(attempt.toDouble())).toLong()
+                )
+            }
     }
-}
-
-enum class AnimationState {
-    IDLE, FINISHED, OPENED
 }
