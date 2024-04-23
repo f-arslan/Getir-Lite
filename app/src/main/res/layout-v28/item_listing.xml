@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/suggested_product_card_width"
+    android:layout_height="wrap_content"
+    android:paddingTop="6dp"
+    android:paddingBottom="16dp">
+
+    <View
+        android:id="@+id/view_placeholder"
+        android:layout_width="wrap_content"
+        android:layout_height="2dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/item_card"
+        android:layout_width="@dimen/suggested_product_image_size"
+        android:layout_height="@dimen/suggested_product_image_size"
+        android:layout_marginTop="8dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/view_placeholder"
+        app:strokeWidth="0dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:cardElevation="0dp">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_item"
+                android:layout_width="92dp"
+                android:layout_height="92dp"
+                android:contentDescription="@string/food_image"
+                android:scaleType="centerCrop"
+                tools:background="@drawable/food" />
+
+        </androidx.cardview.widget.CardView>
+
+        <com.patika.getir_lite.ui.BorderView
+            android:id="@+id/view_card_border"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.patika.getir_lite.ui.ActionCardView
+        android:id="@+id/item_action_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="-8dp"
+        android:translationZ="1dp"
+        app:buttonContainerSize="@dimen/action_listing_size"
+        app:layout_constraintEnd_toEndOf="@id/item_card"
+        app:layout_constraintTop_toBottomOf="@id/view_placeholder"
+        app:orientation="vertical"
+        app:textContainerHeight="@dimen/action_listing_size"
+        app:textContainerWidth="@dimen/action_listing_size"
+        app:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tv_item_price"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="?attr/colorPrimary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/item_card"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/item_card"
+        tools:text="₺0,00" />
+
+    <TextView
+        android:id="@+id/tv_item_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="?attr/colorOnSurface"
+        android:textFontWeight="600"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@+id/item_card"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_item_price"
+        tools:text="Product Name Product Name" />
+
+    <TextView
+        android:id="@+id/tv_item_attribute"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:fontFamily="@font/opensans_semibold"
+        android:maxLines="1"
+        android:textColor="?attr/colorPrimaryInverse"
+        android:textFontWeight="600"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@+id/item_card"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_item_name"
+        tools:text="Attribute" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

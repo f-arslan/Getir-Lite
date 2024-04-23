@@ -18,21 +18,11 @@ class BasketViewModel @Inject constructor(
     private val _basketUiState = MutableStateFlow<BasketUiState>(BasketUiState.Idle)
     val basketUiState = _basketUiState.asStateFlow()
 
-    fun onClearBasketClick() {
+    fun onClearAndFinishBasketClick() {
         viewModelScope.launch {
-            val result = productRepository.clearBasket()
+            val isCleaned = productRepository.clearBasket()
             when {
-                result -> _basketUiState.update { BasketUiState.Cleaned }
-                else -> _basketUiState.update { BasketUiState.Error(GenericOperationFail()) }
-            }
-        }
-    }
-
-    fun onFinishOrderClick() {
-        viewModelScope.launch {
-            val result = productRepository.clearBasket()
-            when {
-                result -> _basketUiState.update { BasketUiState.Completed }
+                isCleaned -> _basketUiState.update { BasketUiState.Completed }
                 else -> _basketUiState.update { BasketUiState.Error(GenericOperationFail()) }
             }
         }
