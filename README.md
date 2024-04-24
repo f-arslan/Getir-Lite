@@ -4,7 +4,7 @@ Getir Lite was developed with Kotlin and Android Views system, which consists of
 
 ![Feature](public/feature.png)
 
-### For other images, check out [here](public/screenshots/).
+#### For other images, check out [here](public/screenshots/).
 
 ## Documentation & Download
 You can check the documentation from [here](https://f-arslan.github.io/getir-bootcamp-final-project/).
@@ -38,6 +38,10 @@ Go to the [Releases](https://github.com/f-arslan/getir-bootcamp-final-project/re
 Each component in this stack contributes to a robust, maintainable, and efficient Android application, ensuring top performance and user experience.
 
 ## Demo
+
+
+
+https://github.com/f-arslan/getir-bootcamp-final-project/assets/66749900/8ffaa9bd-7ed7-4234-8e85-bc53ed76d9a7
 
 
 
@@ -110,4 +114,4 @@ val calculateDelay: (Long) -> Long = { attempt: Long ->
 ```
 And the data was observed from respective fragments only between `STARTED` and `ONPAUSE`. From the event perspective (user events like clicking and typing), events go to the view model and then to the repository; after the repository handles the event, fragments can be collected. With the help of unidirectional data flow, code became easier to reason about.
 
-As a wrap-up, the application implements a Single Source of Truth (SSOT) strategy. With the help of this, you can manage the data in one place, and it is also better for testability. You can find further details in our [project documentation](https://f-arslan.github.io/getir-bootcamp-final-project/) and more general concepts in the official Android [documentation](https://developer.android.com/topic/architecture#single-source-of-truth).
+As a wrap-up, the application implements a Single Source of Truth (SSOT) strategy. With the help of this, you can manage the data in one place, and it is also better for testability. You can find further details in official [documentation](https://developer.android.com/topic/architecture#single-source-of-truth).
