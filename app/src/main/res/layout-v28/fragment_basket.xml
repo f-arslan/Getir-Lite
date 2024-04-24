@@ -28,6 +28,12 @@
         app:layout_constraintTop_toTopOf="@id/layout_toolbar"
         app:tint="?attr/colorSurface" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:background="@drawable/bg_bottom_shadow"
+        app:layout_constraintBottom_toTopOf="@id/cl_bottom" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_basket"
         android:layout_width="match_parent"
@@ -35,76 +41,67 @@
         android:orientation="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        app:layout_constraintBottom_toTopOf="@id/frameLayout"
+        app:layout_constraintBottom_toTopOf="@+id/cl_bottom"
         app:layout_constraintTop_toBottomOf="@id/layout_toolbar"
         tools:itemCount="3"
         tools:listitem="@layout/item_basket" />
 
-    <FrameLayout
-        android:id="@+id/frameLayout"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_bottom"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_bar_height"
         android:background="?attr/colorSurface"
+        android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="12dp">
+        <Button
+            android:id="@+id/btn_complete_basket"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_button_basket"
+            android:foreground="?attr/selectableItemBackground"
+            android:text="@string/basket_button_text"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ll_total_price"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
-                android:id="@+id/btn_complete_basket"
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/bg_button_basket"
-                android:foreground="?attr/selectableItemBackground"
-                android:text="@string/basket_button_text"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/ll_total_price"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+        <LinearLayout
+            android:id="@+id/ll_total_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <LinearLayout
-                android:id="@+id/ll_total_price"
+            <TextView
+                android:id="@+id/tv_old_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                android:textColor="#697488"
+                android:textFontWeight="600"
+                android:textSize="12sp"
+                tools:text="@string/_2000_00" />
 
-                <TextView
-                    android:id="@+id/tv_old_price"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="#697488"
-                    android:textFontWeight="600"
-                    android:textSize="12sp"
-                    tools:text="@string/_2000_00" />
+            <TextView
+                android:id="@+id/tv_final_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="@string/_2000_00" />
 
-                <TextView
-                    android:id="@+id/tv_final_price"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="?attr/colorPrimary"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    tools:text="@string/_2000_00" />
-
-            </LinearLayout>
+        </LinearLayout>
 
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:background="@drawable/bg_bottom_shadow" />
-
-    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -77,9 +77,6 @@ dependencies {
     // Coroutine Test
     implementation(libs.kotlinx.coroutines.test)
 
-    // Datastore
-    implementation(libs.datastore.preferences)
-
     // Retrofit & OkHttp
     implementation(libs.retrofit)
     implementation(libs.retrofit2.kotlinx.serialization.converter)

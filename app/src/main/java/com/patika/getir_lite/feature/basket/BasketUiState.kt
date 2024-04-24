@@ -7,3 +7,14 @@ sealed interface BasketUiState {
     data object Completed : BasketUiState
     data class Error(val exception: GenericOperationFail) : BasketUiState
 }
+
+enum class SizeState {
+    Idle, Bigger, Smaller
+}
+
+data class SizeUiState(
+    val lastSize: Int = -1,
+    val sizeState: SizeState = SizeState.Idle,
+    val isZero: Boolean = true,
+    val lastUpdateTime: Long = System.currentTimeMillis()
+)

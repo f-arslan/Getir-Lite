@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.patika.getir_lite.ProductViewModel
 import com.patika.getir_lite.R
 import com.patika.getir_lite.data.local.model.ItemWithProduct
@@ -28,7 +29,6 @@ import com.patika.getir_lite.util.ext.showCancelDialog
 import com.patika.getir_lite.util.ext.showCompleteDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
-import java.math.BigDecimal
 
 /**
  * A fragment for displaying and managing a basket of products This clas handles the UI related to the
@@ -42,6 +42,7 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
     private val productViewModel: ProductViewModel by activityViewModels()
     private lateinit var basketProductAdapter: ProductAdapter
     private lateinit var productListAdapter: ProductListAdapter
+    private lateinit var concatAdapter: ConcatAdapter
 
     override fun inflateBinding(
         inflater: LayoutInflater,
@@ -51,12 +52,13 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
     override fun FragmentBasketBinding.onMain() {
         setupTextView()
         setupRecycleViewAndAdapters()
-        listenBasketWithProducts()
-        listenSuggestedProducts()
+        listenBasketProductsState()
+        observeSuggestedProduct()
         listenDeleteBasketClick()
         listenUiStateChanges()
         listenOnCancelClick()
         finishOrderClick()
+        notifyChanges()
     }
 
     private fun FragmentBasketBinding.finishOrderClick() {
@@ -115,14 +117,22 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
             onProductClick = ::navigateToDetailFragment
         )
 
-        val concatAdapter = ConcatAdapter(basketProductAdapter, headerAdapter, productListAdapter)
-        rvBasket.adapter = concatAdapter
-        rvBasket.itemAnimator = null
+        concatAdapter = ConcatAdapter(basketProductAdapter, headerAdapter)
 
-        val divider = ContextCompat.getDrawable(requireContext(), R.drawable.divider)
-        val margin = resources.getDimensionPixelSize(R.dimen.margin_8)
-        divider?.let {
-            rvBasket.addItemDecoration(DividerDecoration(divider, margin))
+        rvBasket.apply {
+            adapter = concatAdapter
+            itemAnimator?.apply {
+                changeDuration = 150
+                addDuration = 150
+                removeDuration = 150
+                moveDuration = 150
+            }
+
+            val divider = ContextCompat.getDrawable(requireContext(), R.drawable.divider)
+            val margin = resources.getDimensionPixelSize(R.dimen.margin_8)
+            divider?.let {
+                addItemDecoration(DividerDecoration(divider, margin))
+            }
         }
     }
 
@@ -134,47 +144,67 @@ class BasketFragment : BaseFragment<FragmentBasketBinding>() {
         safeNavigate(BasketFragmentDirections.actionBasketFragmentToListingFragment())
     }
 
-    private fun listenSuggestedProducts() = scopeWithLifecycle {
-        productViewModel.suggestedProducts.collectLatest { response ->
-            when (response) {
-                is BaseResponse.Error -> Unit
-                BaseResponse.Loading -> Unit
-
+    private fun FragmentBasketBinding.listenBasketProductsState() = scopeWithLifecycle {
+        productViewModel.basketWithProducts.collectLatest { basketWithProducts ->
+            when (basketWithProducts) {
                 is BaseResponse.Success -> {
-                    productListAdapter.saveData(response.data)
+                    val data = basketWithProducts.data
+                    val price =
+                        data.order.totalPrice.also { viewModel.updateIsZeroState(it) }
+                            .formatPrice()
+
+                    basketProductAdapter.saveData(data.itemsWithProducts.map(ItemWithProduct::toProductWithCount))
+                    viewModel.updateSizeState(data.itemsWithProducts.size)
+                    tvFinalPrice.text = price
+                    SpannableString(price).apply {
+                        setSpan(StrikethroughSpan(), 0, price.length, 0)
+                        tvOldPrice.text = this
+                    }
                 }
+
+                else -> Unit
             }
         }
     }
 
-    private var isZero = true
-    private fun FragmentBasketBinding.listenBasketWithProducts() = with(productViewModel) {
-        scopeWithLifecycle {
-            basketWithProducts.collectLatest { response ->
-                when (response) {
-                    is BaseResponse.Success -> {
-                        val data = response.data
-                        val price =
-                            data.order.totalPrice.also {
-                                isZero = it <= BigDecimal.ZERO
-                            }
-                                .formatPrice()
-
-                        basketProductAdapter.saveData(data.itemsWithProducts.map(ItemWithProduct::toProductWithCount))
-                        tvFinalPrice.text = price
-                        SpannableString(price).apply {
-                            setSpan(StrikethroughSpan(), 0, price.length, 0)
-                            tvOldPrice.text = this
-                        }
-                    }
-
-                    else -> Unit
-                }
+    private fun observeSuggestedProduct() = scopeWithLifecycle {
+        productViewModel.suggestedProducts.collectLatest { response ->
+            if (response is BaseResponse.Success) {
+                productListAdapter.saveData(response.data)
             }
         }
     }
 
     private fun FragmentBasketBinding.setupTextView() {
         layoutToolbar.textView.text = getString(R.string.basket_title)
+    }
+
+    private fun notifyChanges() = scopeWithLifecycle {
+        viewModel.sizeUiState.collectLatest { sizeUiState ->
+            isZero = sizeUiState.isZero
+            if (this@BasketFragment::concatAdapter.isInitialized) {
+                when (sizeUiState.sizeState) {
+                    SizeState.Bigger, SizeState.Smaller -> {
+                        val isAdapterPresent =
+                            concatAdapter.adapters.any { it is ProductListAdapter }
+                        if (isAdapterPresent) {
+                            concatAdapter.removeAdapter(productListAdapter)
+                        } else {
+                            concatAdapter.addAdapter(productListAdapter)
+                        }
+                    }
+
+                    else -> {
+                        if (!concatAdapter.adapters.any { it is ProductListAdapter }) {
+                            concatAdapter.addAdapter(productListAdapter)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    companion object {
+        private var isZero = true
     }
 }
