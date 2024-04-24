@@ -26,11 +26,14 @@ interface ProductRepository {
     /**
      * Fetches data from a remote server and synchronizes it with the local database. This method ensures
      * that data fetching and insertion are thread-safe and are executed sequentially by using a mutex.
+     * If `isCached` is false, the local database will be reset before data fetching to ensure fresh data synchronization.
      *
+     * @param isCached A Boolean flag indicating whether the data should be fetched from the cached source.
+     *                 If false, the local database will be reset to ensure fresh data is fetched and stored.
      * @return [BaseResponse] indicating the success or error state of the operation.
      * @throws TopLevelException.GenericException if there is any issue during the fetching or database operation.
      */
-    suspend fun fetchDataFromRemoteAndSync(): BaseResponse<Unit>
+    suspend fun fetchDataFromRemoteAndSync(isCached: Boolean = true): BaseResponse<Unit>
 
     /**
      * Retrieves a flow of suggested products, often used for displaying recommendations or promotions.

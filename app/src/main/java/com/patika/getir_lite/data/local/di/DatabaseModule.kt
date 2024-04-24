@@ -14,15 +14,27 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
+    private var instance: ProductDatabase? = null
 
     @Singleton
     @Provides
-    fun provideDatabase(@ApplicationContext context: Context): ProductDatabase =
-        Room.databaseBuilder(context, ProductDatabase::class.java, DB_NAME).build()
+    fun provideDatabase(@ApplicationContext context: Context): ProductDatabase {
+        if (instance == null) {
+            instance = Room.databaseBuilder(context, ProductDatabase::class.java, DB_NAME).build()
+        }
+        return instance!!
+    }
 
     @Singleton
     @Provides
     fun provideProductDao(db: ProductDatabase): ProductDao = db.productDto()
+
+    fun resetDatabase(@ApplicationContext context: Context) {
+        instance?.close()
+        context.deleteDatabase(DB_NAME)
+        instance = null
+        provideDatabase(context)
+    }
 
     private const val DB_NAME = "product"
 }

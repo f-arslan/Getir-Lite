@@ -28,7 +28,7 @@ class FakeProductDataSource : ProductRepository {
     val orders = mutableListOf<OrderEntity>()
     private val items = mutableListOf<ItemEntity>()
 
-    override suspend fun fetchDataFromRemoteAndSync(): BaseResponse<Unit> {
+    override suspend fun fetchDataFromRemoteAndSync(isCached: Boolean): BaseResponse<Unit> {
         return BaseResponse.Success(Unit)
     }
 

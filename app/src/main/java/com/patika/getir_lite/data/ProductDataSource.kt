@@ -1,8 +1,10 @@
 package com.patika.getir_lite.data
 
+import android.content.Context
 import com.patika.getir_lite.data.di.AppDispatchers.IO
 import com.patika.getir_lite.data.di.Dispatcher
 import com.patika.getir_lite.data.local.ProductDao
+import com.patika.getir_lite.data.local.di.DatabaseModule
 import com.patika.getir_lite.data.local.model.BasketWithProducts
 import com.patika.getir_lite.data.local.model.OrderEntity
 import com.patika.getir_lite.data.local.model.OrderStatus
@@ -21,6 +23,7 @@ import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.ProductType
 import com.patika.getir_lite.model.ProductWithCount
 import com.patika.getir_lite.util.TopLevelException
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
@@ -42,7 +45,8 @@ import javax.inject.Inject
 class ProductDataSource @Inject constructor(
     private val remoteRepository: RemoteRepository,
     private val productDao: ProductDao,
-    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
+    @ApplicationContext private val context: Context
 ) : ProductRepository {
     override fun getProductsAsFlow(): Flow<List<ProductWithCount>> =
         productDao.getProductsWithCounts(ProductType.PRODUCT)
@@ -52,8 +56,12 @@ class ProductDataSource @Inject constructor(
 
     private val mutex = Mutex()
 
-    override suspend fun fetchDataFromRemoteAndSync(): BaseResponse<Unit> = try {
+    override suspend fun fetchDataFromRemoteAndSync(isCached: Boolean): BaseResponse<Unit> = try {
         mutex.withLock {
+            if (!isCached) {
+                DatabaseModule.resetDatabase(context)
+            }
+
             withContext(ioDispatcher) {
                 val dbStatus = productDao.getStatus().firstOrNull() ?: run {
                     val id = productDao.insertStatus(StatusEntity())

@@ -142,12 +142,11 @@ class ProductViewModel @Inject constructor(
             initialValue = BaseResponse.Loading
         )
 
-
     @MainThread
     fun initializeProductData() = viewModelScope.launch {
-        productRepository.fetchDataFromRemoteAndSync()
+        // If you want to fetch fresh data from the remote source, set `isCached` to false.
+        productRepository.fetchDataFromRemoteAndSync(isCached = false)
     }
-
 
     private var job: Job? = null
 
