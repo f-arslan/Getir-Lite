@@ -39,7 +39,7 @@ class RemoteDataSource @Inject constructor(
     override suspend fun getSuggestedProductDtos(): BaseResponse<List<SuggestedProductDto>> =
         remoteResultWrapper(productApi::getSuggestedProducts) { responseBody ->
             if (responseBody.isNotEmpty()) {
-                BaseResponse.Success(responseBody.first().suggestedProductDtos)
+                BaseResponse.Success(responseBody.first().suggestedProductDtos ?: emptyList())
             } else {
                 BaseResponse.Error(ProductEmptyException())
             }

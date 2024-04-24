@@ -7,6 +7,7 @@ import com.patika.getir_lite.model.CountType
 import com.patika.getir_lite.model.ProductType
 import com.patika.getir_lite.model.Order
 import com.patika.getir_lite.model.ProductWithCount
+import com.patika.getir_lite.util.TopLevelException
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -23,12 +24,13 @@ interface ProductRepository {
     fun getProductsAsFlow(): Flow<List<ProductWithCount>>
 
     /**
-     * Initiates a fetch for product data from remote sources, typically involving network requests to an API.
-     * This method should handle synchronization of local data with remote data.
+     * Fetches data from a remote server and synchronizes it with the local database. This method ensures
+     * that data fetching and insertion are thread-safe and are executed sequentially by using a mutex.
      *
-     * @return A [BaseResponse] indicating the success or failure of the fetch operation.
+     * @return [BaseResponse] indicating the success or error state of the operation.
+     * @throws TopLevelException.GenericException if there is any issue during the fetching or database operation.
      */
-    suspend fun fetchDataFromRemote(): BaseResponse<Unit>
+    suspend fun fetchDataFromRemoteAndSync(): BaseResponse<Unit>
 
     /**
      * Retrieves a flow of suggested products, often used for displaying recommendations or promotions.

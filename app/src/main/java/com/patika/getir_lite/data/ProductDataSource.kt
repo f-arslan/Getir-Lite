@@ -25,8 +25,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -49,27 +50,29 @@ class ProductDataSource @Inject constructor(
     override fun getSuggestedProductsAsFlow(): Flow<List<ProductWithCount>> =
         productDao.getProductsWithCounts(ProductType.SUGGESTED_PRODUCT)
 
-    override suspend fun fetchDataFromRemote(): BaseResponse<Unit> = try {
-        withContext(ioDispatcher) {
-            val dbStatus = productDao.getStatus().firstOrNull() ?: run {
-                val id = productDao.insertStatus(StatusEntity())
-                StatusEntity(id = id)
+    private val mutex = Mutex()
+
+    override suspend fun fetchDataFromRemoteAndSync(): BaseResponse<Unit> = try {
+        mutex.withLock {
+            withContext(ioDispatcher) {
+                val dbStatus = productDao.getStatus().firstOrNull() ?: run {
+                    val id = productDao.insertStatus(StatusEntity())
+                    StatusEntity(id = id)
+                }
+
+                if (dbStatus.isProductLoaded && dbStatus.isSuggestedProductLoaded)
+                    return@withContext BaseResponse.Success(Unit)
+
+                if (!dbStatus.isProductLoaded) {
+                    launch { insertProductToDb() }
+                }
+
+                if (!dbStatus.isSuggestedProductLoaded) {
+                    launch { insertSuggestedProductToDb() }
+                }
+
+                BaseResponse.Success(Unit)
             }
-
-            if (dbStatus.isProductLoaded && dbStatus.isSuggestedProductLoaded)
-                return@withContext BaseResponse.Success(Unit)
-
-            val proJob = launch {
-                if (!dbStatus.isProductLoaded) insertProductToDb()
-            }
-
-            val suggestedProJob = launch {
-                if (!dbStatus.isSuggestedProductLoaded) insertSuggestedProductToDb()
-            }
-
-            joinAll(proJob, suggestedProJob)
-
-            BaseResponse.Success(Unit)
         }
     } catch (e: Exception) {
         BaseResponse.Error(TopLevelException.GenericException(e.message))

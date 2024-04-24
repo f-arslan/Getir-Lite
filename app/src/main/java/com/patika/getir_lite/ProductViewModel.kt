@@ -63,8 +63,8 @@ class ProductViewModel @Inject constructor(
         .retryWhen { cause, attempt ->
             if (cause is ProductNotLoadedException && attempt < MAX_RETRIES) {
                 val delayTime = calculateDelay(attempt)
-                if (attempt > 0) emit(BaseResponse.Error(NoConnectionException(delayTime)))
-                productRepository.fetchDataFromRemote()
+                if (attempt >= 3) emit(BaseResponse.Error(NoConnectionException(delayTime)))
+                productRepository.fetchDataFromRemoteAndSync()
                 delay(delayTime)
                 true
             } else {
@@ -95,7 +95,7 @@ class ProductViewModel @Inject constructor(
         }
         .retryWhen { cause, attempt ->
             if (cause is ProductNotLoadedException && attempt < MAX_RETRIES) {
-                if (attempt > 0) productRepository.fetchDataFromRemote()
+                productRepository.fetchDataFromRemoteAndSync()
                 delay(calculateDelay(attempt))
                 true
             } else {
@@ -142,9 +142,10 @@ class ProductViewModel @Inject constructor(
             initialValue = BaseResponse.Loading
         )
 
+
     @MainThread
     fun initializeProductData() = viewModelScope.launch {
-        productRepository.fetchDataFromRemote()
+        productRepository.fetchDataFromRemoteAndSync()
     }
 
 
@@ -178,12 +179,8 @@ class ProductViewModel @Inject constructor(
         private const val MAX_RETRIES = 50
         private const val RETRY_DELAY_MS = 2000L
         private const val MAX_DELAY_MS = 30000L
-        val calculateDelay: (Long) -> Long =
-            { attempt: Long ->
-                min(
-                    MAX_DELAY_MS,
-                    RETRY_DELAY_MS * (2.0.pow(attempt.toDouble())).toLong()
-                )
-            }
+        val calculateDelay: (Long) -> Long = { attempt: Long ->
+            min(MAX_DELAY_MS, RETRY_DELAY_MS * (2.0.pow(attempt.toDouble())).toLong())
+        }
     }
 }

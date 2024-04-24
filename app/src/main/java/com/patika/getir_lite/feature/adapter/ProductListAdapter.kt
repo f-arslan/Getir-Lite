@@ -31,6 +31,7 @@ class ProductListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductListViewHolder {
         val binding =
             SuggestedProductBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        binding.rvSuggestedProduct.itemAnimator = null
         return ProductListViewHolder(binding)
     }
 
@@ -43,10 +44,10 @@ class ProductListAdapter(
         fun bind() {
             binding.rvSuggestedProduct.apply {
                 itemAnimator = null
+                isNestedScrollingEnabled = false
                 if (adapter == null) {
                     layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
                     adapter = productAdapter
-                    isNestedScrollingEnabled = false
                     loadViews(this)
                     addItemDecoration(MarginItemDecoration())
                 }

@@ -49,8 +49,10 @@ class ProductAdapter(
      */
     override fun getItemViewType(position: Int): Int = viewType
 
-    private val asyncListDiffer = AsyncListDiffer(this, ItemDiff)  // Manages list diffing to optimize updates.
-    private val itemCountStatusMap = HashMap<Long, ItemCountStatus>()  // Tracks count changes for products to animate or adjust UI.
+    private val asyncListDiffer =
+        AsyncListDiffer(this, ItemDiff)  // Manages list diffing to optimize updates.
+    private val itemCountStatusMap =
+        HashMap<Long, ItemCountStatus>()  // Tracks count changes for products to animate or adjust UI.
 
     override fun getItemCount(): Int = asyncListDiffer.currentList.size
 
@@ -121,7 +123,11 @@ class ProductAdapter(
 
             binding.root.isClickable = true
             itemActionView.enableButtons()
-            itemActionView.handleActionOperations(product.productId, product.count, binding)
+            itemActionView.handleActionOperations(
+                productId = product.productId,
+                count = product.count,
+                binding = binding
+            )
 
             binding.root.setOnClickListener {
                 onProductClick(product.productId)
@@ -140,7 +146,11 @@ class ProductAdapter(
 
             binding.root.isClickable = true
             itemActionView.enableButtons()
-            itemActionView.handleActionOperations(product.productId, product.count, binding)
+            itemActionView.handleActionOperations(
+                product.productId,
+                product.count,
+                binding
+            )
             binding.root.setOnClickListener {
                 onProductClick(product.productId)
             }

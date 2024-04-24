@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -101,4 +102,14 @@ class ProductViewModelTest {
             assertEquals(1, item?.count)
         }
     }
+
+    @Test
+    fun `initial state is loading for all products`() = runTest {
+        val productResponse = viewModel.products.first()
+        assertTrue(productResponse is BaseResponse.Loading)
+
+        val suggestedProductResponse = viewModel.suggestedProducts.first()
+        assertTrue(suggestedProductResponse is BaseResponse.Loading)
+    }
+
 }

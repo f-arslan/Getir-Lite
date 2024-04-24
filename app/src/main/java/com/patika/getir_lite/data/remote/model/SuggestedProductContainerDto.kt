@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SuggestedProductContainerDto(
     val id: String,
-    val name: String,
+    val name: String? = null,
     @SerialName("products")
-    val suggestedProductDtos: List<SuggestedProductDto>,
+    val suggestedProductDtos: List<SuggestedProductDto>? = null,
 )

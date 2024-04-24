@@ -9,7 +9,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.SimpleItemAnimator
 import com.patika.getir_lite.ProductViewModel
 import com.patika.getir_lite.R
 import com.patika.getir_lite.data.local.model.ItemWithProduct
