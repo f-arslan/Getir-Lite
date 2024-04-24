@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Getir-Lite"
 include(":app")
- 

@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="Base.Theme.GetirLite" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.GetirLite" parent="Theme.Material3.Light.NoActionBar">
         <item name="fontFamily">@font/opensans</item>
 
         <item name="colorPrimary">@color/md_theme_light_primary</item>
@@ -35,6 +35,7 @@
 
     <style name="Theme.Getir.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenAnimatedIcon">@drawable/getir_splash_icon</item>
+        <item name="windowSplashScreenBackground">@color/md_theme_light_surface</item>
         <item name="postSplashScreenTheme">@style/Theme.GetirLite</item>
     </style>
 

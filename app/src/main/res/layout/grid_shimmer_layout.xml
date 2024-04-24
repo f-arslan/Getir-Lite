@@ -4,7 +4,8 @@
     android:id="@+id/shimmer_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="16dp"
     tools:ignore="RtlSymmetry">
 
     <GridLayout
